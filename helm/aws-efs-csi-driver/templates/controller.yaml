@@ -6,20 +6,17 @@ metadata:
   name: efs-csi-controller
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
+    {{- include "labels.common" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  selector:
+  selector
     matchLabels:
       app: efs-csi-controller
-      app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
         app: efs-csi-controller
-        app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "labels.common" . | nindent 8 }}
       {{- if .Values.node.podAnnotations }}
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
