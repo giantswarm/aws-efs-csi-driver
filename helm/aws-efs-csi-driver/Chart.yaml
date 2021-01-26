@@ -1,0 +1,10 @@
+apiVersion: v1
+appVersion: "1.0.0"
+name: aws-efs-csi-driver
+description: A Helm chart for AWS EFS CSI Driver
+version: [[ .Version ]]
+namespace: kube-system
+kubeVersion: ">=1.14.0-0"
+home: https://github.com/giantswarm/aws-efs-csi-driver
+sources:
+  - https://raw.githubusercontent.com/giantswarm/aws-ebs-csi-driver-app/v[[ .Version ]]/README.md
