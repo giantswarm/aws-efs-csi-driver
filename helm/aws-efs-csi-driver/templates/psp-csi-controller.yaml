@@ -31,4 +31,3 @@ spec:
   - configMap
   - emptyDir
 {{- end }}
-
