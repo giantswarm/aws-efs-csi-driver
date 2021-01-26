@@ -1,16 +1,16 @@
 version: 2.1
 orbs:
-  architect: giantswarm/architect@1.0.0
+  architect: giantswarm/architect@0.17.0
 
 workflows:
   package-and-push-chart-on-tag:
     jobs:
       - architect/push-to-app-catalog:
           context: "architect"
-          name: "package and push {CHART-NAME} chart"
+          name: "package and push aws-efs-csi-driver chart"
           app_catalog: "giantswarm-playground-catalog"
           app_catalog_test: "giantswarm-playground-test-catalog"
-          chart: "{CHART-NAME}"
+          chart: "aws-efs-csi-driver"
           # Trigger job on git tag.
           filters:
             tags:
