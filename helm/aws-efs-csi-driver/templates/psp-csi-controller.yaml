@@ -4,7 +4,7 @@ kind: PodSecurityPolicy
 metadata:
   name: efs-csi-controller
 spec:
-  allowPrivilegeEscalation: false
+  allowPrivilegeEscalation: true
   fsGroup:
     ranges:
     - max: 65535
@@ -15,6 +15,7 @@ spec:
     - max: 65535
       min: 1000
     rule: MustRunAs
+  privileged: true
   hostNetwork: true
   hostPorts:
   - max: 9808
