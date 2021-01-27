@@ -39,7 +39,7 @@ spec:
         {{- . | toYaml | nindent 8 }}
         {{- end }}
       hostNetwork: true
-      serviceAccountName: efs-csi-node-sa
+      serviceAccountName: efs-csi-node
       securityContext:
         fsGroup: 0
         runAsGroup: 0
