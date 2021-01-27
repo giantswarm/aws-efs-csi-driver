@@ -10,6 +10,6 @@ rules:
   resources:
   - podsecuritypolicies
   resourceNames:
-  - efs-csi-controller
+  - efs-csi-node
   verbs:
   - use
