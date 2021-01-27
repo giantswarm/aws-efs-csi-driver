@@ -52,11 +52,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       priorityClassName: system-node-critical
-      tolerations:
-        - operator: Exists
-        {{- with .Values.node.tolerations }}
-        {{- . | toYaml | nindent 8 }}
-        {{- end }}
       containers:
         - name: efs-plugin
           securityContext:
