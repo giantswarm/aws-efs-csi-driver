@@ -5,7 +5,7 @@
 name: aws-efs-csi-driver
 namespace: kube-system
 
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: quay.io/giantswarm/aws-efs-csi-driver
@@ -79,7 +79,7 @@ serviceAccount:
     annotations: {}
     ## Enable if IAM roles for SA is used
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
-    name: efs-csi-controller-sa
+    name: efs-csi-controller
 
 controller:
   create: false
