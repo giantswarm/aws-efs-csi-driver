@@ -9,7 +9,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  selector
+  selector:
     matchLabels:
       app: efs-csi-controller
   template:
