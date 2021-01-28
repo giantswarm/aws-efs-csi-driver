@@ -43,7 +43,7 @@ spec:
       securityContext:
         fsGroup: 0
         runAsGroup: 0
-        runAsUser: 
+        runAsUser: 0
       {{- if .Values.dnsPolicy }}
       dnsPolicy: "{{ .Values.dnsPolicy }}"
       {{- end }}
