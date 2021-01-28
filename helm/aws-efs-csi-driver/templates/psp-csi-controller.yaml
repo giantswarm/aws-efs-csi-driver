@@ -6,22 +6,16 @@ metadata:
 spec:
   allowPrivilegeEscalation: true
   fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
+    rule: RunAsAny
   runAsUser:
-    ranges:
-    - max: 65535
-      min: 1000
-    rule: MustRunAs
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
   privileged: true
   hostNetwork: true
   hostPorts:
   - max: 9808
     min: 9808
-  seLinux:
-    rule: RunAsAny
   supplementalGroups:
     ranges:
     - max: 65535
