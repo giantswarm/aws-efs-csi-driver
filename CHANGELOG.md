@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2021-01-29
+
 ## [0.0.5] - 2021-01-27
 
 ## [0.0.4] - 2021-01-27
@@ -17,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.0.2...v0.0.3
