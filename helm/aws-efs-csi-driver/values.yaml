@@ -8,20 +8,20 @@ namespace: kube-system
 replicaCount: 1
 
 image:
-  repository: quay.io/giantswarm/aws-efs-csi-driver
-  tag: "v1.1.0"
+  repository: docker.io/giantswarm/aws-efs-csi-driver
+  tag: "v1.2.0"
   pullPolicy: IfNotPresent
 
 sidecars:
   livenessProbeImage:
-    repository: quay.io/giantswarm/livenessprobe
+    repository: docker.io/giantswarm/livenessprobe
     tag: "v2.2.0"
   nodeDriverRegistrarImage:
-    repository: quay.io/giantswarm/csi-node-driver-registrar
+    repository: docker.io/giantswarm/csi-node-driver-registrar
     tag: "v2.1.0"
   csiProvisionerImage:
-    repository: quay.io/giantswarm/csi-provisioner
-    tag: "v2.1.0"
+    repository: docker.io/giantswarm/csi-provisioner
+    tag: "v2.1.1"
 
 imagePullSecrets: []
 nameOverride: ""
