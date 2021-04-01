@@ -21,7 +21,7 @@ sidecars:
     tag: "v2.1.0"
   csiProvisionerImage:
     repository: docker.io/giantswarm/csi-provisioner
-    tag: "v2.1.0"
+    tag: "v2.1.1"
 
 imagePullSecrets: []
 nameOverride: ""
