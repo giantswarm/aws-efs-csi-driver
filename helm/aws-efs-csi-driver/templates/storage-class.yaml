@@ -8,6 +8,7 @@ metadata:
   {{ toYaml . | indent 4 }}
   {{- end }}
 provisioner: efs.csi.aws.com
+{{- with .mountOptions }}
 mountOptions:
 {{ toYaml . }}
 {{- end }}
