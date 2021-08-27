@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - 2021-08-27
 
+### Changed
+
+- Update efs-csi-driver to v1.3.3.
+
 ## [0.1.2] - 2021-05-06
 
 ### Fixed
