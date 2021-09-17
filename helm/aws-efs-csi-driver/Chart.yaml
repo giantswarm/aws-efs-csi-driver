@@ -6,4 +6,4 @@ version: [[ .Version ]]
 kubeVersion: ">=1.17.0-0"
 home: https://github.com/giantswarm/aws-efs-csi-driver
 sources:
-  - https://raw.githubusercontent.com/giantswarm/aws-efs-csi-driver-app/v[[ .Version ]]/README.md
+  - https://raw.githubusercontent.com/giantswarm/aws-efs-csi-driver/v[[ .Version ]]/README.md
