@@ -92,7 +92,7 @@ controller:
   # path on efs when deleteing an access point
   deleteAccessPointRootDir: false
 
-  storageClasses: []
+storageClasses: []
 # Add StorageClass resources like:
 # - name: efs-sc
 ##  Use that annotation if you want this to your default storageclass
