@@ -1,0 +1,31 @@
+{{- if .Values.controller.create }}
+{{ if .Capabilities.APIVersions.Has "autoscaling.k8s.io/v1" }}
+{{ if .Values.verticalPodAutoscaler.enabled }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: efs-csi-controller
+  namespace: kube-system
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  resourcePolicy:
+    containerPolicies:
+    - containerName: efs-plugin
+      controlledValues: RequestsAndLimits
+      mode: Auto
+    - containerName: csi-provisioner
+      controlledValues: RequestsAndLimits
+      mode: Auto
+    - containerName: liveness-probe
+      controlledValues: RequestsAndLimits
+      mode: Auto
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name:  efs-csi-controller
+  updatePolicy:
+    updateMode: Auto
+{{ end }}
+{{ end }}
+{{ end }}

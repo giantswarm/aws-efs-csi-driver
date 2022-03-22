@@ -107,3 +107,6 @@ storageClasses: []
 #     directoryPerms: "700"
 #     gidRangeStart: "1000"
 #     gidRangeEnd: "2000"
+
+verticalPodAutoscaler:
+  enabled: true

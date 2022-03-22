@@ -1,0 +1,29 @@
+{{ if .Capabilities.APIVersions.Has "autoscaling.k8s.io/v1" }}
+{{ if .Values.verticalPodAutoscaler.enabled }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: efs-csi-node
+  namespace: kube-system
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  resourcePolicy:
+    containerPolicies:
+    - containerName: efs-plugin
+      controlledValues: RequestsAndLimits
+      mode: Auto
+    - containerName: node-driver-registrar
+      controlledValues: RequestsAndLimits
+      mode: Auto
+    - containerName: liveness-probe
+      controlledValues: RequestsAndLimits
+      mode: Auto
+  targetRef:
+    apiVersion: apps/v1
+    kind: DaemonSet
+    name:  efs-csi-node
+  updatePolicy:
+    updateMode: Auto
+{{ end }}
+{{ end }}
