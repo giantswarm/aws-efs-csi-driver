@@ -21,18 +21,15 @@ spec:
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-      hostNetwork: true
-      {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- range .Values.imagePullSecrets }}
-        - name: {{ . }}
-      {{- end }}
-      {{- end }}
+      hostNetwork: {{ .Values.controller.hostNetwork }}
       nodeSelector:
-        kubernetes.io/os: linux
-        {{- with .Values.nodeSelector }}
-        {{- . | toYaml | nindent 8 }}
+{{- if gt (len (keys .Values.controller.nodeSelector)) 0 }}
+        {{- with .Values.controller.nodeSelector }}
+{{ toYaml . | indent 8 }}
         {{- end }}
+{{- else }}
+        kubernetes.io/role: master
+{{- end }}
       securityContext:
         fsGroup: 0
         runAsGroup: 0

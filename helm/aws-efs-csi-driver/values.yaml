@@ -9,19 +9,19 @@ replicaCount: 1
 
 image:
   repository: docker.io/giantswarm/aws-efs-csi-driver
-  tag: "v1.3.3"
+  tag: "v1.3.8"
   pullPolicy: IfNotPresent
 
 sidecars:
   livenessProbeImage:
     repository: docker.io/giantswarm/livenessprobe
-    tag: "v2.2.0"
+    tag: "v2.6.0"
   nodeDriverRegistrarImage:
     repository: docker.io/giantswarm/csi-node-driver-registrar
-    tag: "v2.1.0"
+    tag: "v2.5.0"
   csiProvisionerImage:
     repository: docker.io/giantswarm/csi-provisioner
-    tag: "v2.1.1"
+    tag: "v3.1.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -82,7 +82,9 @@ serviceAccount:
     name: efs-csi-controller
 
 controller:
+  hostNetwork: true
   create: false
+  nodeSelector: {}
   # Add additional tags to access points
   tags:
     {}
