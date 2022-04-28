@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update efs-csi-driver to v1.3.8.
+- Adjust node selector and tolerations.
 
 ## [0.3.0] - 2022-03-22
 
