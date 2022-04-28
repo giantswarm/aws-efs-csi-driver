@@ -52,7 +52,6 @@ spec:
           effect: NoExecute
           tolerationSeconds: 300
         {{- end }}
-        {{- with .Values.node.tolerations }}
       serviceAccountName: efs-csi-node
       securityContext:
         fsGroup: 0
