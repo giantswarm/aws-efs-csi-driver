@@ -48,6 +48,8 @@ tolerations: []
 affinity: {}
 
 node:
+  nodeSelector: {}
+  tolerateAllTaints: true
   podAnnotations: {}
   tolerations: []
 
