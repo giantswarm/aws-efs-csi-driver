@@ -40,6 +40,7 @@ spec:
         {{- end }}
 {{- else }}
         kubernetes.io/role: worker
+{{- end }}
       hostNetwork: true
       tolerations:
         {{- if .Values.node.tolerateAllTaints }}
