@@ -25,10 +25,6 @@ spec:
         {{- with .Values.controller.nodeSelector }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      securityContext:
-        fsGroup: 0
-        runAsGroup: 0
-        runAsUser: 0
       serviceAccountName: {{ .Values.controller.serviceAccount.name }}
       priorityClassName: system-cluster-critical
       {{- with .Values.controller.tolerations }}
