@@ -86,7 +86,8 @@ controller:
     {}
   nodeSelector:
     kubernetes.io/role: master
-  tolerations: []
+  tolerations:
+    - operator: Exists
   affinity: {}
   serviceAccount:
     create: true
