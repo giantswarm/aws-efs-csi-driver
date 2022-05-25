@@ -52,9 +52,9 @@ node:
   podAnnotations: {}
   resources:
     {}
-  nodeSelector:
-    kubernetes.io/role: worker
-  tolerations: {}
+  nodeSelector: {}
+  tolerations:
+    - operator: Exists
   # Specifies whether a service account should be created
   serviceAccount:
     create: true
