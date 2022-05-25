@@ -29,6 +29,6 @@ rules:
     verbs: ["get", "watch", "list", "delete", "update", "create"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
-    resourceNames: [{{ .Values.controller.serviceAccount.name }}]
+    resourceNames: ["efs-csi-controller"]
     verbs: ["use"]
 {{- end }}
