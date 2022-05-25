@@ -4,6 +4,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: efs-csi-controller
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
@@ -15,6 +16,7 @@ spec:
     metadata:
       labels:
         app: efs-csi-controller
+        {{- include "labels.common" . | nindent 8 }}
       {{- if .Values.node.podAnnotations }}
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
