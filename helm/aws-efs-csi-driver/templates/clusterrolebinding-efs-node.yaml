@@ -7,8 +7,8 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: efs-csi-node
-    namespace: kube-system
+    name: {{ .Values.node.serviceAccount.name }}
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: efs-csi-node
