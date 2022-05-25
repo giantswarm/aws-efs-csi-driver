@@ -54,8 +54,7 @@ node:
     {}
   nodeSelector:
     kubernetes.io/role: worker
-  tolerations:
-    - operator: Exists
+  tolerations: {}
   # Specifies whether a service account should be created
   serviceAccount:
     create: true
