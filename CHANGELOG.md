@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use different ports to avoid collision with ebs controller using ports 9909 and 9809
+- Updated chart to upstream 2.2.6
+- Improve tolerations to deploy in all worker nodes
+- Remove root security context from pods
+
 ## [0.4.0] - 2022-04-28
 
 ### Changed

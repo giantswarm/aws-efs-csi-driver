@@ -18,8 +18,8 @@ spec:
     rule: MustRunAs
   hostNetwork: true
   hostPorts:
-  - min: 9809
-    max: 9809
+  - min: 9000
+    max: 10000
   volumes:
   - secret
   - configMap

@@ -14,8 +14,8 @@ spec:
   privileged: true
   hostNetwork: true
   hostPorts:
-  - max: 9808
-    min: 9808
+  - min: 9000
+    max: 10000
   supplementalGroups:
     ranges:
     - max: 65535
