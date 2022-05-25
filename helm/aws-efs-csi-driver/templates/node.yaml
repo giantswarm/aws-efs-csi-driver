@@ -3,7 +3,6 @@ kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: efs-csi-node
-  namespace: kube-system
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
@@ -14,14 +13,13 @@ spec:
     metadata:
       labels:
         app: efs-csi-node
-        {{- include "labels.common" . | nindent 8 }}
       {{- if .Values.node.podAnnotations }}
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-    {{- if .Values.hostAliases }}
+    {{- with .Values.node.hostAliases }}
       hostAliases:
-      {{- range $k, $v := .Values.hostAliases }}
+      {{- range $k, $v := . }}
         - ip: {{ $v.ip }}
           hostnames:
             - {{ $k }}.efs.{{ $v.region }}.amazonaws.com
@@ -34,37 +32,20 @@ spec:
       {{- end }}
     {{- end }}
       nodeSelector:
-{{- if gt (len (keys .Values.node.nodeSelector)) 0 }}
+        beta.kubernetes.io/os: linux
         {{- with .Values.node.nodeSelector }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-{{- else }}
-        kubernetes.io/role: worker
-{{- end }}
-      hostNetwork: true
-      tolerations:
-        {{- if .Values.node.tolerateAllTaints }}
-        - operator: Exists
-        {{- else }}
-        - key: CriticalAddonsOnly
-          operator: Exists
-        - operator: Exists
-          effect: NoExecute
-          tolerationSeconds: 300
-        {{- end }}
-      serviceAccountName: efs-csi-node
-      securityContext:
-        fsGroup: 0
-        runAsGroup: 0
-        runAsUser: 0
-      {{- if .Values.dnsPolicy }}
-      dnsPolicy: "{{ .Values.dnsPolicy }}"
-      {{- end }}
-      {{- with .Values.dnsConfig }}
-      dnsConfig:
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+      hostNetwork: true
+      dnsPolicy: {{ .Values.node.dnsPolicy }}
+      {{- with .Values.node.dnsConfig }}
+      dnsConfig: {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ .Values.node.serviceAccount.name }}
       priorityClassName: system-node-critical
+      {{- with .Values.node.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: efs-plugin
           securityContext:
@@ -73,7 +54,7 @@ spec:
           args:
             - --endpoint=$(CSI_ENDPOINT)
             - --logtostderr
-            - --v={{ .Values.logLevel }}
+            - --v={{ .Values.node.logLevel }}
           env:
             - name: CSI_ENDPOINT
               value: unix:/csi/csi.sock
@@ -91,7 +72,7 @@ spec:
               mountPath: /etc/amazon/efs-legacy
           ports:
             - name: healthz
-              containerPort: 9809
+              containerPort: {{ .Values.node.healthPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -101,12 +82,15 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 2
             failureThreshold: 5
+          {{- with .Values.node.resources }}
+          resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
         - name: node-driver-registrar
-          image: {{ printf "%s:%s" .Values.sidecars.nodeDriverRegistrarImage.repository .Values.sidecars.nodeDriverRegistrarImage.tag }}
+          image: {{ printf "%s:%s" .Values.sidecars.nodeDriverRegistrar.image.repository .Values.sidecars.nodeDriverRegistrar.image.tag }}
           args:
             - --csi-address=$(ADDRESS)
             - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
-            - --v={{ .Values.logLevel }}
+            - --v={{ .Values.node.logLevel }}
           env:
             - name: ADDRESS
               value: /csi/csi.sock
@@ -121,15 +105,21 @@ spec:
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
+          {{- with .Values.sidecars.nodeDriverRegistrar.resources }}
+          resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
         - name: liveness-probe
-          image: {{ printf "%s:%s" .Values.sidecars.livenessProbeImage.repository .Values.sidecars.livenessProbeImage.tag }}
+          image: {{ printf "%s:%s" .Values.sidecars.livenessProbe.image.repository .Values.sidecars.livenessProbe.image.tag }}
           args:
             - --csi-address=/csi/csi.sock
-            - --health-port=9809
-            - --v={{ .Values.logLevel }}
+            - --health-port={{ .Values.node.healthPort }}
+            - --v={{ .Values.node.logLevel }}
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
+          {{- with .Values.sidecars.livenessProbe.resources }}
+          resources: {{ toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
         - name: kubelet-dir
           hostPath:
