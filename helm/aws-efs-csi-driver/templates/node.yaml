@@ -26,12 +26,6 @@ spec:
             - {{ $k }}.efs.{{ $v.region }}.amazonaws.com
       {{- end }}
     {{- end }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.imagePullSecrets }}
-        - name: {{ . }}
-      {{- end }}
-    {{- end }}
       nodeSelector:
         beta.kubernetes.io/os: linux
         {{- with .Values.node.nodeSelector }}
