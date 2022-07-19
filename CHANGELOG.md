@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Respect the `controller.serviceAccount.create` values flag
+
+### Added
+
+- values.schema.json
+
 ## [0.6.0] - 2022-06-15
 
 ### Changed
