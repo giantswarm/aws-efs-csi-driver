@@ -25,4 +25,5 @@ spec:
   - secret
   - configMap
   - emptyDir
+  - projected
 {{- end }}
