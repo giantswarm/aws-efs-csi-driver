@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2022-07-25
+
+### Fixed
+
+- Added `projected` to the list of permitted volumes in the `psp-csi-controller`.
+
 ## [0.6.1] - 2022-07-19
 
 ### Fixed
