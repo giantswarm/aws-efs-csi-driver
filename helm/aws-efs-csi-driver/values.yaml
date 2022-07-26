@@ -97,8 +97,8 @@ controller:
   healthPort: 9909
   regionalStsEndpoints: false
   # Specified the deployment strategy
-  # Ex: Recreate
-  strategy: RollingUpdate
+  # Ex: RollingUpdate
+  strategy: Recreate
 
 storageClasses: []
 # Add StorageClass resources like:
