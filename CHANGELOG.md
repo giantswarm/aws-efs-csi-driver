@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.2] - 2022-07-26
+## [0.6.3] - 2022-07-26
+
+### Fixed
+
+- Added the possibility to override the deployment strategy for the controller
 
 ## [0.6.2] - 2022-07-25
 
