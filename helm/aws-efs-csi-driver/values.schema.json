@@ -163,7 +163,7 @@
         },
         "replicaCount": {
             "type": "integer"
-        },        
+        },
         "sidecars": {
             "type": "object",
             "properties": {
