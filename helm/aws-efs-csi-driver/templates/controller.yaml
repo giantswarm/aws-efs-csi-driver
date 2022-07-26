@@ -9,6 +9,10 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- if .Values.controller.strategy }}
+  strategy:
+    type: {{ .Values.controller.strategy }}
+  {{- end }}
   selector:
     matchLabels:
       app: efs-csi-controller

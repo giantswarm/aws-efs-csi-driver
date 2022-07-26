@@ -96,6 +96,9 @@ controller:
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
   healthPort: 9909
   regionalStsEndpoints: false
+  # Specified the deployment strategy
+  # Ex: Recreate
+  strategy: RollingUpdate
 
 storageClasses: []
 # Add StorageClass resources like:
