@@ -25,7 +25,6 @@ spec:
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-      hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
         {{- with .Values.controller.nodeSelector }}
