@@ -12,9 +12,6 @@ spec:
   seLinux:
     rule: RunAsAny
   privileged: true
-  hostPorts:
-  - min: 9000
-    max: 10000
   supplementalGroups:
     ranges:
     - max: 65535

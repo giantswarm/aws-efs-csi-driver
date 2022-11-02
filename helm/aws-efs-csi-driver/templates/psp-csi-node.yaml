@@ -16,9 +16,6 @@ spec:
     - max: 65535
       min: 1
     rule: MustRunAs
-  hostPorts:
-  - min: 9000
-    max: 10000
   volumes:
   - secret
   - configMap
