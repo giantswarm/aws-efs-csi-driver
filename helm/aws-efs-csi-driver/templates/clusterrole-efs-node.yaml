@@ -13,3 +13,11 @@ rules:
   - efs-csi-node
   verbs:
   - use
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
