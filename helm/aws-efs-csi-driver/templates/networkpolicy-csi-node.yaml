@@ -1,0 +1,15 @@
+{{- if .Values.controller.create }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: aws-efs-csi-node
+  namespace: {{ .Release.Namespace }}
+spec:
+  egress:
+  - {}
+  podSelector:
+    matchLabels:
+      app: efs-csi-node
+  policyTypes:
+  - Egress
+{{- end }}
