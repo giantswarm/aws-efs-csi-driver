@@ -25,7 +25,6 @@ spec:
       annotations: {{ toYaml .Values.node.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-      hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
         {{- with .Values.controller.nodeSelector }}
@@ -52,6 +51,10 @@ spec:
             - --delete-access-point-root-dir={{ hasKey .Values.controller "deleteAccessPointRootDir" | ternary .Values.controller.deleteAccessPointRootDir false }}
             - --vol-metrics-opt-in={{ hasKey .Values.controller "volMetricsOptIn" | ternary .Values.controller.volMetricsOptIn false }}
           env:
+            - name: CSI_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
             {{- if .Values.controller.regionalStsEndpoints }}

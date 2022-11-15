@@ -9,7 +9,7 @@ replicaCount: 1
 
 image:
   repository: docker.io/giantswarm/aws-efs-csi-driver
-  tag: "v1.3.8"
+  tag: "v1.4.4"
   pullPolicy: IfNotPresent
 
 sidecars:
