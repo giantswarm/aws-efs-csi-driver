@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - 2022-11-15
 
-:warning: Please ensure you're running `kiam-app` with App Version `v2.5.1` or higher.
+**WARNING** Please ensure you're running `kiam-app` with App Version `v2.5.1` or higher.
 
 This is necessary to allow efs-csi-driver to get the `Identity Document` from `Instance Metadata Service`.
 You can verify this by describing `kiam-agent` DaemonSet and checking if `--allow-route-regexp="/latest/*"` is set.
