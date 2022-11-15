@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+**WARNING** Please ensure you're running `kiam-app` with App Version `v2.5.1` or higher.
+
+### Changed
+
+- Update aws-efs-csi-driver version to `v1.4.5`.
+
 ## [0.7.0] - 2022-11-15
 
 **WARNING** Please ensure you're running `kiam-app` with App Version `v2.5.1` or higher.
