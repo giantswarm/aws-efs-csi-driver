@@ -1,0 +1,17 @@
+{{ if .Values.ciliumNetworkPolicy.enabled }}
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: "{{ template "aws-efs-csi-driver.name" . }}"
+  labels:
+    {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "aws-efs-csi-driver.matchLabels" . | nindent 6 }}
+  egress:
+    - toEntities:
+        - kube-apiserver
+        - world
+{{ end }}

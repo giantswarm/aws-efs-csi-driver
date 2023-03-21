@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Add `CiliumNetworkPolicy` to allow egress traffic.
+
 ## [0.7.1] - 2022-11-15
 
 **WARNING** Please ensure you're running `kiam-app` with App Version `v2.5.1` or higher.

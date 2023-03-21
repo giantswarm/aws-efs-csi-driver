@@ -2,6 +2,14 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
+        "ciliumNetworkPolicy": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
         "controller": {
             "type": "object",
             "properties": {
@@ -53,6 +61,9 @@
                             "type": "string"
                         }
                     }
+                },
+                "strategy": {
+                    "type": "string"
                 },
                 "tags": {
                     "type": "object"
@@ -116,9 +127,6 @@
                 },
                 "logLevel": {
                     "type": "integer"
-                },
-                "strategy": {
-                    "type": "string"
                 },
                 "nodeSelector": {
                     "type": "object",

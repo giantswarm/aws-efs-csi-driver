@@ -118,3 +118,6 @@ storageClasses: []
 
 verticalPodAutoscaler:
   enabled: true
+
+ciliumNetworkPolicy:
+  enabled: false
