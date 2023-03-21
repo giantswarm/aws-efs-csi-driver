@@ -76,3 +76,4 @@ Create a string out of the map for controller tags flag
 {{- define "aws-efs-csi-driver.matchLabels" -}}
 app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
