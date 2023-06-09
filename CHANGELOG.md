@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2023-06-09
+
 ### Fixed
 
 - Added `projected` volume type to csi-node PSP to allow the user of IRSA.
@@ -127,7 +129,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.6.4...v0.7.0
 [0.6.4]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.6.3...v0.6.4
