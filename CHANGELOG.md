@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bump app version in chart.yaml too
+
 ## [0.8.0] - 2023-06-23
 
 ### Changed
