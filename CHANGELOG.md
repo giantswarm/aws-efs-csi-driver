@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Move chart to default catalog
+- Disabled VPA
+- Bumped image to v1.6.0
+
 ## [0.8.1] - 2023-06-23
 
 ### Fixed
