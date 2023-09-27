@@ -9,7 +9,7 @@ replicaCount: 1
 
 image:
   repository: docker.io/giantswarm/aws-efs-csi-driver
-  tag: "v1.5.7"
+  tag: "v1.6.0"
   pullPolicy: IfNotPresent
 
 sidecars:
@@ -21,12 +21,12 @@ sidecars:
   nodeDriverRegistrar:
     image:
       repository: docker.io/giantswarm/csi-node-driver-registrar
-      tag: "v2.5.1"
+      tag: "v2.8.0"
     resources: {}
   csiProvisioner:
     image:
       repository: docker.io/giantswarm/csi-provisioner
-      tag: "v3.1.0"
+      tag: "v3.5.0"
     resources: {}
 
 nameOverride: ""
@@ -117,4 +117,4 @@ storageClasses: []
 #     gidRangeEnd: "2000"
 
 verticalPodAutoscaler:
-  enabled: true
+  enabled: false
