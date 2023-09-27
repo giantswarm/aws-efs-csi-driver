@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-09-27
+
 ### Changed
 
 - Move chart to default catalog
@@ -147,7 +149,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.8.1...v1.0.0
 [0.8.1]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v0.7.1...v0.7.2
