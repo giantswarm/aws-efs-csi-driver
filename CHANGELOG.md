@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Move chart to default catalog
+- Breaking Change: Move chart to "giantswarm" catalog from "giantswarm-playground"
 - Disabled VPA
 - Bumped image to v1.6.0
 
