@@ -1,0 +1,40 @@
+{{- if .Values.global.podSecurityStandards.enforced }}
+apiVersion: kyverno.io/v2alpha1
+kind: PolicyException
+metadata:
+  name: efs-csi-node-exceptions
+  namespace: {{ .Release.Namespace }}
+spec:
+  exceptions:
+    - policyName: disallow-capabilities-strict
+      ruleNames:
+        - autogen-require-drop-all
+    - policyName: disallow-host-path
+      ruleNames:
+        - autogen-host-path
+    - policyName: restrict-volume-types
+      ruleNames:
+        - autogen-restricted-volumes
+    - policyName: require-run-as-nonroot
+      ruleNames:
+        - autogen-run-as-non-root
+    - policyName: restrict-seccomp-strict
+      ruleNames:
+        - autogen-check-seccomp-strict
+    - policyName: disallow-privilege-escalation
+      ruleNames:
+        - autogen-privileged-containers
+    - policyName: disallow-privileged-containers
+      ruleNames:
+        - autogen-privilege-escalation
+  match:
+    any:
+      - resources:
+          kinds:
+            - DaemonSet
+            - Pod
+          namespaces:
+            - {{ .Release.Namespace }}
+          names:
+            - efs-csi-node*
+{{- end }}
