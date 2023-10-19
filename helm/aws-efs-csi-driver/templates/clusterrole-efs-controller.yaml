@@ -27,8 +27,10 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "watch", "list", "delete", "update", "create"]
+{{- if not .Values.global.podSecurityStandards.enforced }}
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
     resourceNames: ["efs-csi-controller"]
     verbs: ["use"]
+{{- end }}
 {{- end }}

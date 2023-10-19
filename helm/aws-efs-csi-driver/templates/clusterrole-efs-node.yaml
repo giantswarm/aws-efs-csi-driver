@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 rules:
+{{- if not .Values.global.podSecurityStandards.enforced }}
 - apiGroups:
   - policy
   resources:
@@ -13,6 +14,7 @@ rules:
   - efs-csi-node
   verbs:
   - use
+{{- end }}
 - apiGroups:
   - ""
   resources:

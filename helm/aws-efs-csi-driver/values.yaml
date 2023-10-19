@@ -118,3 +118,7 @@ storageClasses: []
 
 verticalPodAutoscaler:
   enabled: false
+
+global:
+  podSecurityStandards:
+    enforced: false
