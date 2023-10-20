@@ -3,7 +3,7 @@ apiVersion: kyverno.io/v2alpha1
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: {{ .Release.Namespace }}
+  namespace: giantswarm 
 spec:
   exceptions:
     - policyName: disallow-capabilities-strict
@@ -13,21 +13,27 @@ spec:
     - policyName: disallow-host-path
       ruleNames:
         - autogen-host-path
+        - host-path
     - policyName: restrict-volume-types
       ruleNames:
         - autogen-restricted-volumes
+        - restricted-volumes
     - policyName: require-run-as-nonroot
       ruleNames:
         - autogen-run-as-non-root
+        - run-as-nonroot
     - policyName: restrict-seccomp-strict
       ruleNames:
         - autogen-check-seccomp-strict
+        - check-seccomp-strict 
     - policyName: disallow-privilege-escalation
       ruleNames:
-        - autogen-privileged-containers
+        - privilege-escalation
+        - autogen-privilege-escalation 
     - policyName: disallow-privileged-containers
       ruleNames:
-        - autogen-privilege-escalation
+        - autogen-privileged-containers 
+        - privileged-containers
   match:
     any:
       - resources:
