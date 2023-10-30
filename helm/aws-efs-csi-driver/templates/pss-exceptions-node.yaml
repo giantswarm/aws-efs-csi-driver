@@ -28,9 +28,11 @@ spec:
         - autogen-check-seccomp-strict
     - policyName: disallow-privilege-escalation
       ruleNames:
+        - privileged-containers
         - autogen-privileged-containers
     - policyName: disallow-privileged-containers
       ruleNames:
+        - privilege-escalation
         - autogen-privilege-escalation
   match:
     any:
