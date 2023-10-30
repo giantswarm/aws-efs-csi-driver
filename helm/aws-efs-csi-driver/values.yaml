@@ -21,7 +21,7 @@ sidecars:
   nodeDriverRegistrar:
     image:
       repository: docker.io/giantswarm/csi-node-driver-registrar
-      tag: "v2.8.0"
+      tag: "v2.9.0"
     resources: {}
   csiProvisioner:
     image:
