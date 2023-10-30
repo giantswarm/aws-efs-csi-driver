@@ -26,7 +26,7 @@ sidecars:
   csiProvisioner:
     image:
       repository: docker.io/giantswarm/csi-provisioner
-      tag: "v3.5.0"
+      tag: "v3.6.1"
     resources: {}
 
 nameOverride: ""
