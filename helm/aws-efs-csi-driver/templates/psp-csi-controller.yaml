@@ -1,4 +1,5 @@
 {{- if .Values.controller.create }}
+{{- if not .Values.global.podSecurityStandards.enforced }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -22,4 +23,5 @@ spec:
   - configMap
   - emptyDir
   - projected
+{{- end }}
 {{- end }}
