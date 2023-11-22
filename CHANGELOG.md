@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Updated
+
+- Extract registry from container images to allow sett it for all images on value level.
+- Change node-selector values for to fit new scheme.
+- Configure same service account for both controller and node to simplify IRSA role permissions.
+
 ## [1.1.0] - 2023-10-30
 
 ### Changed
