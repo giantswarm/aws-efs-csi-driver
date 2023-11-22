@@ -96,7 +96,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: "{{ .Values.image.registry }}/{{ .Values.sidecars.livenessProbe.image.repository }}:{{ .Values.sidecars.livenessProbe.image.tag }}""
+          image: "{{ .Values.image.registry }}/{{ .Values.sidecars.livenessProbe.image.repository }}:{{ .Values.sidecars.livenessProbe.image.tag }}"
           args:
             - --csi-address=/csi/csi.sock
             - --health-port={{ .Values.controller.healthPort }}
