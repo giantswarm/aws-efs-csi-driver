@@ -8,24 +8,25 @@ namespace: kube-system
 replicaCount: 1
 
 image:
-  repository: docker.io/giantswarm/aws-efs-csi-driver
+  registry: docker.io
+  repository: giantswarm/aws-efs-csi-driver
   tag: "v1.7.0"
   pullPolicy: IfNotPresent
 
 sidecars:
   livenessProbe:
     image:
-      repository: docker.io/giantswarm/livenessprobe
+      repository: giantswarm/livenessprobe
       tag: "v2.11.0"
     resources: {}
   nodeDriverRegistrar:
     image:
-      repository: docker.io/giantswarm/csi-node-driver-registrar
+      repository: giantswarm/csi-node-driver-registrar
       tag: "v2.9.1"
     resources: {}
   csiProvisioner:
     image:
-      repository: docker.io/giantswarm/csi-provisioner
+      repository: giantswarm/csi-provisioner
       tag: "v3.6.2"
     resources: {}
 
@@ -52,13 +53,13 @@ node:
   resources:
     {}
   nodeSelector:
-    kubernetes.io/role: worker
+    node.kubernetes.io/worker: ""
   tolerations:
     - operator: Exists
   # Specifies whether a service account should be created
   serviceAccount:
     create: true
-    name: efs-csi-node-sa
+    name: efs-csi-sa
     annotations: {}
     ## Enable if EKS IAM for SA is used
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
@@ -84,13 +85,13 @@ controller:
   resources:
     {}
   nodeSelector:
-    kubernetes.io/role: master
+    node-role.kubernetes.io/control-plane: ""
   tolerations:
     - operator: Exists
   affinity: {}
   serviceAccount:
-    create: true
-    name: efs-csi-controller-sa
+    create: false
+    name: efs-csi-sa
     annotations: {}
     ## Enable if EKS IAM for SA is used
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
