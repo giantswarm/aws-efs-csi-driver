@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Configure `gsoci.azurecr.io` as the default container image registry.
+
 ## [1.2.0] - 2023-11-22
 
 ⚠️ Attention: Minor release [1.2.0] contains breaking changes in default user values! The name of the service account changed to `efs-csi-sa` for both components. This affects clusters with already configured IRSA roles. You either need to update the trust identity policy on the role to match the new service account or set service account names to the original values via the values file. ⚠️
@@ -72,8 +76,6 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 - Update aws-efs-csi-driver version to `v1.4.4`.
 - Disable `hostNetwork`.
-
-## [0.6.4] - 2022-07-26
 
 ## [0.6.4] - 2022-07-26
 
