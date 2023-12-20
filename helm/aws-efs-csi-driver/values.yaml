@@ -8,7 +8,7 @@ namespace: kube-system
 replicaCount: 1
 
 image:
-  registry: docker.io
+  registry: gsoci.azurecr.io
   repository: giantswarm/aws-efs-csi-driver
   tag: "v1.7.2"
   pullPolicy: IfNotPresent
@@ -36,8 +36,7 @@ fullnameOverride: ""
 node:
   # Number for the log level verbosity
   logLevel: 2
-  hostAliases:
-    {}
+  hostAliases: {}
     # For cross VPC EFS, you need to poison or overwrite the DNS for the efs volume as per
     # https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html#wt6-efs-utils-step3
     # implementing the suggested solution found here:
@@ -47,11 +46,9 @@ node:
     #   ip: 10.10.2.2
     #   region: us-east-2
   dnsPolicy: ClusterFirst
-  dnsConfig:
-    {}
+  dnsConfig: {}
   podAnnotations: {}
-  resources:
-    {}
+  resources: {}
   nodeSelector:
     node.kubernetes.io/worker: ""
   tolerations:
@@ -73,8 +70,7 @@ controller:
   # If set, add pv/pvc metadata to plugin create requests as parameters.
   extraCreateMetadata: true
   # Add additional tags to access points
-  tags:
-    {}
+  tags: {}
     # environment: prod
     # region: us-east-1
   # Enable if you want the controller to also delete the
@@ -82,8 +78,7 @@ controller:
   deleteAccessPointRootDir: false
   volMetricsOptIn: false
   podAnnotations: {}
-  resources:
-    {}
+  resources: {}
   nodeSelector:
     node-role.kubernetes.io/control-plane: ""
   tolerations:
