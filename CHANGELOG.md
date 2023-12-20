@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+# Changed
+- Use hostNetwork in agents in order to be able to recover from reboots. EFS tunnels are not stuck anymore.
+
+
 ## [1.2.0] - 2023-11-22
 
 ⚠️ Attention: Minor release [1.2.0] contains breaking changes in default user values! The name of the service account changed to `efs-csi-sa` for both components. This affects clusters with already configured IRSA roles. You either need to update the trust identity policy on the role to match the new service account or set service account names to the original values via the values file. ⚠️
