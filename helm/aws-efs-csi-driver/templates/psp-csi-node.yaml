@@ -8,6 +8,10 @@ spec:
   fsGroup:
     rule: RunAsAny
   privileged: true
+  hostNetwork: true
+  hostPorts:
+  - max: 9809
+    min: 9809
   runAsUser:
     rule: RunAsAny
   seLinux:
