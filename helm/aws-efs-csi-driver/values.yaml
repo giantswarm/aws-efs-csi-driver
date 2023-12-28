@@ -27,7 +27,7 @@ sidecars:
   csiProvisioner:
     image:
       repository: giantswarm/csi-provisioner
-      tag: "v3.6.2"
+      tag: "v3.6.3"
     resources: {}
 
 nameOverride: ""
