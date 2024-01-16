@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix PSS to allow using hostNetwork in agents.
+
 ## [1.2.2] - 2023-12-21
 
 # Changed
