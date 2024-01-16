@@ -40,6 +40,10 @@ spec:
         - adding-capabilities-strict
         - autogen-require-drop-all
         - autogen-adding-capabilities-strict
+        - autogen-host-namespaces
+    - policyName: disallow-host-ports
+      ruleNames:
+        - autogen-host-ports-none
   match:
     any:
       - resources:
