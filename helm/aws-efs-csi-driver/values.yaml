@@ -22,7 +22,7 @@ sidecars:
   nodeDriverRegistrar:
     image:
       repository: giantswarm/csi-node-driver-registrar
-      tag: "v2.9.2"
+      tag: "v2.10.0"
     resources: {}
   csiProvisioner:
     image:
