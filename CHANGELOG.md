@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add even more PSS exceptions to make `node` component run on 1.25.
+
 ## [1.2.3] - 2024-01-16
 
 ### Fixed
