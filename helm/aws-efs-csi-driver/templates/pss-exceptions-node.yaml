@@ -43,9 +43,11 @@ spec:
     - policyName: disallow-host-namespaces
       ruleNames:
         - autogen-host-namespaces
+        - host-namespaces
     - policyName: disallow-host-ports
       ruleNames:
         - autogen-host-ports-none
+        - host-ports-none
   match:
     any:
       - resources:
