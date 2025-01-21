@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 name: aws-efs-csi-driver
+serviceType: managed
 namespace: kube-system
 
 replicaCount: 1
