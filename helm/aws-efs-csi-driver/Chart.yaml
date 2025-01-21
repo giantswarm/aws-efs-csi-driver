@@ -10,3 +10,4 @@ sources:
   - https://github.com/giantswarm/aws-efs-csi-driver
 annotations:
   application.giantswarm.io/team: "phoenix"
+  config.giantswarm.io/version: 1.x.x
