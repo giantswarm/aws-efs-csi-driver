@@ -97,6 +97,8 @@ controller:
       operator: Exists
     - key: efs.csi.aws.com/agent-not-ready
       operator: Exists
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -198,9 +200,7 @@ node:
     # This can be useful if helm timeouts are observed.
     # type: OnDelete
   tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+    - operator: Exists
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
