@@ -1,7 +1,7 @@
 apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
 directories:
-- path: helm/aws-efs-csi-driver-app/templates
+- path: helm/aws-efs-csi-driver/templates
   contents:
   - path: .
     git:

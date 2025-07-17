@@ -1,0 +1,9 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: update image structure
+      sha: 136f20248ec2f8582d2ae2e772404ba851513fb1
+    path: .
+  path: helm/aws-efs-csi-driver-app/templates
+kind: LockConfig
