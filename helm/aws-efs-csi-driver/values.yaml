@@ -90,7 +90,7 @@ controller:
       cpu: 100m
       memory: 128Mi
   nodeSelector:
-    node.kubernetes.io/control-plane: ""
+    node-role.kubernetes.io/control-plane: ""
   updateStrategy: {}
   tolerations:
     - key: CriticalAddonsOnly
@@ -191,7 +191,7 @@ node:
       cpu: 100m
       memory: 128Mi
   nodeSelector:
-    node.kubernetes.io/worker: ""
+    node-role.kubernetes.io/worker: ""
   updateStrategy:
     {}
     # Override default strategy (RollingUpdate) to speed up deployment.
