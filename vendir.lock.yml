@@ -5,5 +5,5 @@ directories:
       commitTitle: update image structure
       sha: 136f20248ec2f8582d2ae2e772404ba851513fb1
     path: .
-  path: helm/aws-efs-csi-driver-app/templates
+  path: helm/aws-efs-csi-driver/templates
 kind: LockConfig
