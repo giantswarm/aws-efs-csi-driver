@@ -245,3 +245,7 @@ storageClasses: []
 
 # Specifies wether to use helm hooks to apply the CSI driver
 useHelmHooksForCSIDriver: true
+
+global:
+  podSecurityStandards:
+    enforced: false
