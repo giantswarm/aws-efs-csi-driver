@@ -198,7 +198,9 @@ node:
     # This can be useful if helm timeouts are observed.
     # type: OnDelete
   tolerations:
-    - operator: Exists
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
