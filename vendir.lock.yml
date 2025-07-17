@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: fix labels
-      sha: 768ef64744e898623435da7b78f22c0350030ae5
+      commitTitle: add IRSA role name
+      sha: 89af68924c89bbda07b9c0ebcd190ce14d943b7f
     path: .
   path: helm/aws-efs-csi-driver/templates
 kind: LockConfig

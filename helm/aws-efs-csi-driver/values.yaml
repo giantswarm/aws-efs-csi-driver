@@ -114,7 +114,7 @@ controller:
   # Specifies whether a service account should be created
   serviceAccount:
     create: true
-    name: efs-csi-controller-sa
+    name: efs-csi-sa
     annotations: {}
     ## Enable if EKS IAM for SA is used
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
