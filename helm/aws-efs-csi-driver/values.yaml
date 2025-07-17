@@ -97,7 +97,15 @@ controller:
       operator: Exists
     - key: efs.csi.aws.com/agent-not-ready
       operator: Exists
-  affinity: {}
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: efs-csi-controller
+          topologyKey: kubernetes.io/hostname
   env: []
   volumes: []
   volumeMounts: []
