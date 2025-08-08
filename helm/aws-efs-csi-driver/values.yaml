@@ -232,8 +232,8 @@ node:
   kubeletPath: /var/lib/kubelet
 
 storageClasses: []
-# Add StorageClass resources like:
-# - name: efs-sc
+# Add a regular StorageClass resource like:
+# - name: efs-default
 #   annotations:
 #     # Use that annotation if you want this to your default storageclass
 #     storageclass.kubernetes.io/is-default-class: "true"
@@ -248,6 +248,26 @@ storageClasses: []
 #     basePath: "/dynamic_provisioning"
 #     subPathPattern: "/subPath"
 #     ensureUniqueDirectory: true
+#   reclaimPolicy: Delete
+#   volumeBindingMode: Immediate
+
+# Or StorageClass cross account like:
+# - name: efs-cross-account
+#   hasSecret: true
+#   roleCrossAccount: arn:aws:iam::751222626996:role/efs-csi-role
+#   mountOptions:
+#   - stunnel #https://github.com/kubernetes-sigs/aws-efs-csi-driver/issues/637
+#   - iam
+#   parameters:
+#     az: ap-southeast-1a
+#     basePath: /p-sg-omni-fer
+#     csi.storage.k8s.io/provisioner-secret-name: x-account2
+#     csi.storage.k8s.io/provisioner-secret-namespace: aws-efs-csi-driver
+#     directoryPerms: "700"
+#     fileSystemId: fs-0cb47d1css8fcc9a9
+#     gidRangeEnd: "2000"
+#     gidRangeStart: "1000"
+#     provisioningMode: efs-ap
 #   reclaimPolicy: Delete
 #   volumeBindingMode: Immediate
 
