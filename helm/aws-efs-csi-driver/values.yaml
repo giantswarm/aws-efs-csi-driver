@@ -256,4 +256,4 @@ useHelmHooksForCSIDriver: true
 
 global:
   podSecurityStandards:
-    enforced: false
+    enforced: true
