@@ -271,7 +271,7 @@ storageClasses: []
 #   reclaimPolicy: Delete
 #   volumeBindingMode: Immediate
 
-# Specifies wether to use helm hooks to apply the CSI driver
+# Specifies whether to use helm hooks to apply the CSI driver
 useHelmHooksForCSIDriver: true
 
 global:
