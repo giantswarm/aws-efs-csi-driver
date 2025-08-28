@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2025-08-28
+
 ### Changed
 
 - Update Kyverno PolicyException apiVersion to v2.
@@ -194,7 +196,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.2.1...v1.2.2
