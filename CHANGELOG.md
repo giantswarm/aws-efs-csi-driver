@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2025-08-28
 
+## [2.0.0] - 2025-08-28
+
 ⚠️ Attention: Major release [2.0.0] contains breaking changes. You need to uninstall the previous app before upgrading to the new release. Your EFS files and mounts will not be deleted, your pods should continue running as normal with no downtime. ⚠️
 
 ### Changed
@@ -200,6 +202,7 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 ## [0.0.1] - 2021-01-27
 
 [Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.0.0...v2.0.0
 [2.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v1.2.2...v1.2.3
