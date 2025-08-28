@@ -40,7 +40,7 @@ sidecars:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-provisioner
-      tag: "v5.2.0"
+      tag: "v5.3.0"
       pullPolicy: IfNotPresent
     resources: {}
     securityContext:
