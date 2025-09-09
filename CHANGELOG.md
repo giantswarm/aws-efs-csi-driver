@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Removed default `nodeSelector` that were relying on the `node-role.kubernetes.io/worker` label, as that's deprecated and will be removed.
+
 ## [2.0.0] - 2025-08-28
 
 ⚠️ Attention: Major release [2.0.0] contains breaking changes. You need to uninstall the previous app before upgrading to the new release. Your EFS files and mounts will not be deleted, your pods should continue running as normal with no downtime. ⚠️
