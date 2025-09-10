@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: fix identation
-      sha: 80541b45881181696c57b8b9165c3d58cb4ef44a
+      commitTitle: update pss
+      sha: 25f4567cecda42c0dfc3db5a288db409f287a379
     path: .
   path: helm/aws-efs-csi-driver/templates
 kind: LockConfig

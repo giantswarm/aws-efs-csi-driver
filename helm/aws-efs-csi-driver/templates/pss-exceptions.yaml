@@ -10,10 +10,10 @@ metadata:
     "helm.sh/hook": "pre-install,pre-upgrade"
 spec:
   exceptions:
-    - policyName: require-run-as-nonroot
+    - policyName: require-run-as-non-root-user
       ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
+      - run-as-non-root-user
+      - autogen-run-as-non-root-user
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation
@@ -71,10 +71,10 @@ spec:
       ruleNames:
         - restricted-volumes
         - autogen-restricted-volumes
-    - policyName: require-run-as-nonroot
+    - policyName: require-run-as-non-root-user
       ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
+      - run-as-non-root-user
+      - autogen-run-as-non-root-user
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation
