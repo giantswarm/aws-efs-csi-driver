@@ -23,7 +23,7 @@ spec:
     metadata:
       labels:
         app: efs-csi-node
-        {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+        {{- include "aws-efs-csi-driver.labels" . | nindent 8 }}
         {{- with .Values.node.podLabels }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
