@@ -28,24 +28,6 @@ spec:
       maxAllowed:
         memory: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.memory }}"
         cpu: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.cpu }}"
-    - containerName: csi-provisioner
-      controlledValues: RequestsAndLimits
-      mode: Auto
-      minAllowed:
-        cpu: {{ .Values.verticalPodAutoscaler.controller.minAllowed.cpu }}
-        memory: {{ .Values.verticalPodAutoscaler.controller.minAllowed.memory }}
-      maxAllowed:
-        memory: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.memory }}"
-        cpu: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.cpu }}"
-    - containerName: liveness-probe
-      controlledValues: RequestsAndLimits
-      mode: Auto
-      minAllowed:
-        cpu: {{ .Values.verticalPodAutoscaler.controller.minAllowed.cpu }}
-        memory: {{ .Values.verticalPodAutoscaler.controller.minAllowed.memory }}
-      maxAllowed:
-        memory: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.memory }}"
-        cpu: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.cpu }}"
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -68,24 +50,6 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: efs-plugin
-      controlledValues: RequestsAndLimits
-      mode: Auto
-      minAllowed:
-        cpu: {{ .Values.verticalPodAutoscaler.node.minAllowed.cpu }}
-        memory: {{ .Values.verticalPodAutoscaler.node.minAllowed.memory }}
-      maxAllowed:
-        memory: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.memory }}"
-        cpu: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.cpu }}"
-    - containerName: csi-driver-registrar
-      controlledValues: RequestsAndLimits
-      mode: Auto
-      minAllowed:
-        cpu: {{ .Values.verticalPodAutoscaler.node.minAllowed.cpu }}
-        memory: {{ .Values.verticalPodAutoscaler.node.minAllowed.memory }}
-      maxAllowed:
-        memory: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.memory }}"
-        cpu: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.cpu }}"
-    - containerName: liveness-probe
       controlledValues: RequestsAndLimits
       mode: Auto
       minAllowed:

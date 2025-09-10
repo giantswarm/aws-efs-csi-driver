@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: fix pss namespace
-      sha: 370483beb42e4efb82522060829c7d165f207a4c
+      commitTitle: only manage main container
+      sha: 6a6694e498a4050d14c23af225b8089be57e828e
     path: .
   path: helm/aws-efs-csi-driver/templates
 kind: LockConfig
