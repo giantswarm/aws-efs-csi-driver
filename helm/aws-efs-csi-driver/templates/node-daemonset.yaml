@@ -5,7 +5,7 @@ metadata:
   name: efs-csi-node
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
+    {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
     {{- with .Values.node.additionalLabels }}
     {{ toYaml . | nindent 4 }}
     {{- end }}
@@ -23,8 +23,7 @@ spec:
     metadata:
       labels:
         app: efs-csi-node
-        app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "aws-efs-csi-driver.labels" . | nindent 8 }}
         {{- with .Values.node.podLabels }}
         {{ toYaml . | nindent 8 }}
         {{- end }}

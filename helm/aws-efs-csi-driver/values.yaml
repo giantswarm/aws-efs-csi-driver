@@ -270,6 +270,25 @@ storageClasses: []
 #   reclaimPolicy: Delete
 #   volumeBindingMode: Immediate
 
+# VPA
+verticalPodAutoscaler:
+  node:
+    updateMode: "Auto"
+    minAllowed:
+      cpu: 100m
+      memory: 128Mi
+    maxAllowed:
+      cpu: 400m
+      memory: 512Mi
+  controller:
+    updateMode: "Auto"
+    minAllowed:
+      cpu: 100m
+      memory: 128Mi
+    maxAllowed:
+      cpu: 400m
+      memory: 512Mi
+
 # Specifies whether to use helm hooks to apply the CSI driver
 useHelmHooksForCSIDriver: true
 

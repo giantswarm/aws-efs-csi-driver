@@ -3,17 +3,17 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-controller-exceptions
-  namespace: {{ .Release.Namespace }}
+  namespace: policy-exceptions
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
 spec:
   exceptions:
-    - policyName: require-run-as-nonroot
+    - policyName: require-run-as-non-root-user
       ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
+      - run-as-non-root-user
+      - autogen-run-as-non-root-user
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation
@@ -56,7 +56,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: {{ .Release.Namespace }}
+  namespace: policy-exceptions
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
@@ -71,10 +71,10 @@ spec:
       ruleNames:
         - restricted-volumes
         - autogen-restricted-volumes
-    - policyName: require-run-as-nonroot
+    - policyName: require-run-as-non-root-user
       ruleNames:
-        - run-as-non-root
-        - autogen-run-as-non-root
+      - run-as-non-root-user
+      - autogen-run-as-non-root-user
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation

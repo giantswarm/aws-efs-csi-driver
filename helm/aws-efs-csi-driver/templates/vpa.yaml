@@ -1,0 +1,60 @@
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ .Values.controller.name }}-vpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.controller.name }}
+  updatePolicy:
+    updateMode: {{ .Values.verticalPodAutoscaler.controller.updateMode }}
+    {{- with .Values.verticalPodAutoscaler.controller.evictionRequirements }}
+    evictionRequirements:
+      {{ toYaml . | nindent 6 }}
+    {{- end }}
+  resourcePolicy:
+    containerPolicies:
+    - containerName: efs-plugin
+      controlledValues: RequestsAndLimits
+      mode: Auto
+      minAllowed:
+        cpu: {{ .Values.verticalPodAutoscaler.controller.minAllowed.cpu }}
+        memory: {{ .Values.verticalPodAutoscaler.controller.minAllowed.memory }}
+      maxAllowed:
+        memory: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.memory }}"
+        cpu: "{{ .Values.verticalPodAutoscaler.controller.maxAllowed.cpu }}"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: efs-csi-node-vpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: DaemonSet
+    name: efs-csi-node
+  updatePolicy:
+    updateMode: {{ .Values.verticalPodAutoscaler.node.updateMode }}
+    {{- with .Values.verticalPodAutoscaler.node.evictionRequirements }}
+    evictionRequirements:
+      {{ toYaml . | nindent 6 }}
+    {{- end }}
+  resourcePolicy:
+    containerPolicies:
+    - containerName: efs-plugin
+      controlledValues: RequestsAndLimits
+      mode: Auto
+      minAllowed:
+        cpu: {{ .Values.verticalPodAutoscaler.node.minAllowed.cpu }}
+        memory: {{ .Values.verticalPodAutoscaler.node.minAllowed.memory }}
+      maxAllowed:
+        memory: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.memory }}"
+        cpu: "{{ .Values.verticalPodAutoscaler.node.maxAllowed.cpu }}"
