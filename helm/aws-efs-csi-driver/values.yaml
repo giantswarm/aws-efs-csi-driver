@@ -274,6 +274,7 @@ storageClasses: []
 # VPA
 verticalPodAutoscaler:
   node:
+    updateMode: "Auto"
     minAllowed:
       cpu: 100m
       memory: 128Mi
@@ -281,6 +282,7 @@ verticalPodAutoscaler:
       cpu: 400m
       memory: 512Mi
   controller:
+    updateMode: "Auto"
     minAllowed:
       cpu: 100m
       memory: 128Mi
