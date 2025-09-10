@@ -12,8 +12,8 @@ spec:
     kind: Deployment
     name: {{ .Values.controller.name }}
   updatePolicy:
-    updateMode: {{ .Values.vpa.controller.updateMode }}
-    {{- with .Values.vpa.controller.evictionRequirements }}
+    updateMode: {{ .Values.verticalPodAutoscaler.controller.updateMode }}
+    {{- with .Values.verticalPodAutoscaler.controller.evictionRequirements }}
     evictionRequirements:
       {{ toYaml . | nindent 6 }}
     {{- end }}
@@ -42,8 +42,8 @@ spec:
     kind: DaemonSet
     name: efs-csi-node
   updatePolicy:
-    updateMode: {{ .Values.vpa.node.updateMode }}
-    {{- with .Values.vpa.node.evictionRequirements }}
+    updateMode: {{ .Values.verticalPodAutoscaler.node.updateMode }}
+    {{- with .Values.verticalPodAutoscaler.node.evictionRequirements }}
     evictionRequirements:
       {{ toYaml . | nindent 6 }}
     {{- end }}
