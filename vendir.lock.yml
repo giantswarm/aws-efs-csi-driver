@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: update pss version
-      sha: b28fabd6d2c0c16a08cde4a27cdafb3c3ff13c8a
+      commitTitle: update pss
+      sha: 25f4567cecda42c0dfc3db5a288db409f287a379
     path: .
   path: helm/aws-efs-csi-driver/templates
 kind: LockConfig
