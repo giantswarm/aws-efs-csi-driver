@@ -3,7 +3,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-controller-exceptions
-  namespace: {{ .Release.Namespace }}
+  namespace: policy-exceptions
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
@@ -56,7 +56,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: {{ .Release.Namespace }}
+  namespace: policy-exceptions
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
