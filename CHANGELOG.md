@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Removed default `nodeSelector` that were relying on the `node-role.kubernetes.io/worker` label, as that's deprecated and will be removed.
 - Add VPA.
 - Add standard labels to all manifests.
 - Move PSS to policy-exceptions namespace.
