@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Increase `minAllowed` memory in VPA.
+
 ## [2.1.1] - 2025-09-11
 
 ### Fixed
