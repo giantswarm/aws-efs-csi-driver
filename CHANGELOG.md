@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Changed `node` controller `nodeAffinity` to only schedule into the worker nodes, to keep the same behavior as we had before removing the `node-role.kubernetes.io/worker` label.
+
 ## [2.1.0] - 2025-09-10
 
 ### Changed
