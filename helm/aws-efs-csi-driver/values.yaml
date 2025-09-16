@@ -12,7 +12,7 @@ portRangeUpperBound: "21049"
 image:
   registry: gsoci.azurecr.io
   repository: giantswarm/aws-efs-csi-driver
-  tag: "v2.1.11"
+  tag: "v2.1.12"
   pullPolicy: IfNotPresent
 
 sidecars:
