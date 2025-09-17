@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add CI helm values file to check Helm rendering during CI.
+
 ## [2.1.3] - 2025-09-17
 
 ### Changed
