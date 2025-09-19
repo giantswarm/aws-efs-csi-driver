@@ -281,7 +281,7 @@ verticalPodAutoscaler:
     updateMode: "Auto"
     minAllowed:
       cpu: 100m
-      memory: 256Mi
+      memory: 128Mi
     maxAllowed:
       cpu: 400m
       memory: 512Mi
