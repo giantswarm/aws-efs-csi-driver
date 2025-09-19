@@ -14,6 +14,10 @@ spec:
       ruleNames:
       - run-as-non-root-user
       - autogen-run-as-non-root-user
+    - policyName: require-run-as-nonroot
+      ruleNames:
+      - run-as-non-root
+      - autogen-run-as-non-root
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation
@@ -75,6 +79,10 @@ spec:
       ruleNames:
       - run-as-non-root-user
       - autogen-run-as-non-root-user
+    - policyName: require-run-as-nonroot
+      ruleNames:
+      - run-as-non-root
+      - autogen-run-as-non-root
     - policyName: disallow-privilege-escalation
       ruleNames:
         - privilege-escalation

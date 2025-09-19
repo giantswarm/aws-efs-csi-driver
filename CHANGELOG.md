@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Remove resource limits, causing issues with VPA on boot.
+
+### Fix
+
+- Add PSS for non-root
+
 ### Added
 
 - Add CI helm values file to check Helm rendering during CI.
