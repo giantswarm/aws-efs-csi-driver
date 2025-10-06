@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use the container registry helm value when templating the daemonset.
+
 ## [2.1.4] - 2025-09-19
 
 ### Changed
