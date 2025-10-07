@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: fix pss
-      sha: e212ddfc32bf2151512b777cb8176517aa5a42b9
+      commitTitle: 'Merge pull request #1 from giantswarm/container-registry-fix...'
+      sha: 81df9ba313bd76fa0d55ef6cd8df79d9c519fd68
     path: .
   path: helm/aws-efs-csi-driver/templates
 kind: LockConfig
