@@ -3,4 +3,11 @@
     // Base config - https://github.com/giantswarm/renovate-presets/blob/main/default.json5
     "github>giantswarm/renovate-presets:default.json5",
   ],
+  // Take `ignorePaths` from preset but override for repo-specific files
+  "packageRules": [
+    {
+      "matchFileNames": ["helm/aws-efs-csi-driver/values.yaml"],
+      "enabled": false,
+    },
+  ],
 }
