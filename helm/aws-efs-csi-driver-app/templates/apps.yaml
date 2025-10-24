@@ -1,0 +1,31 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: {{ .Values.clusterID }}-aws-efs-csi-driver
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver-app.labels" $ | nindent 4 }}
+spec:
+  catalog: giantswarm
+  config:
+    configMap:
+      name: {{ .Values.clusterID }}-cluster-values
+      namespace: {{ .Release.Namespace }}
+  install:
+    timeout: "10m"
+  upgrade:
+    timeout: "10m"
+  kubeConfig:
+    context:
+      name: {{ .Values.clusterID }}-admin@{{ .Values.clusterID }}
+    inCluster: false
+    secret:
+      name: {{ .Values.clusterID }}-kubeconfig
+      namespace: {{ .Release.Namespace }}
+  name: aws-efs-csi-driver
+  namespace: kube-system
+  version: {{ .Chart.Version }}
+  extraConfigs:
+  - kind: configMap
+    name: {{ .Values.clusterID }}-aws-efs-csi-driver-config
+    namespace: {{ .Release.Namespace }}
