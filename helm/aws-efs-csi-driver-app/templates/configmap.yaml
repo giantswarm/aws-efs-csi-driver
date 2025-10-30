@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.clusterID }}-aws-efs-csi-driver-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver-app.labels" $ | nindent 4 }}
+data:
+  values: |
+  {{- (tpl (.Values | toYaml | toString) $) | nindent 4 }}
