@@ -1,6 +1,6 @@
 apiVersion: v2
 appVersion: "2.1.9"
-name: aws-efs-csi-driver-app
+name: aws-efs-csi-driver-bundle
 description: A Helm chart for AWS EFS CSI Driver
 icon: https://s.giantswarm.io/app-icons/aws/2/dark.svg
 version: 2.1.5

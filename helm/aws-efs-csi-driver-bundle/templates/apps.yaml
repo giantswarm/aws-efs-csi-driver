@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.clusterID }}-aws-efs-csi-driver
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "aws-efs-csi-driver-app.labels" $ | nindent 4 }}
+    {{- include "aws-efs-csi-driver-bundle.labels" $ | nindent 4 }}
 spec:
   catalog: giantswarm
   config:
