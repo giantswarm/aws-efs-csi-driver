@@ -2,21 +2,31 @@ version: 2.1
 orbs:
   architect: giantswarm/architect@6.7.0
 
+job_filters: &job_filters
+  filters:
+    tags:
+      only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    branches:
+      ignore:
+        - main
+
 workflows:
   package-and-push-chart-on-tag:
     jobs:
-    - architect/push-to-app-catalog:
-        context: architect
-        executor: app-build-suite
-        name: package and push aws-efs-csi-driver chart
-        app_catalog: giantswarm-catalog
-        app_catalog_test: giantswarm-test-catalog
-        chart: aws-efs-csi-driver
-          # Trigger job on git tag.
-        filters:
-          tags:
-            only: /^v.*/
-          branches:
-            ignore:
-            - main
-            - master
+      - architect/push-to-app-catalog:
+          context: architect
+          executor: app-build-suite
+          name: package and push aws-efs-csi-driver chart
+          app_catalog: giantswarm-catalog
+          app_catalog_test: giantswarm-test-catalog
+          chart: aws-efs-csi-driver
+          <<: *job_filters
+
+      - architect/push-to-app-catalog:
+          context: architect
+          executor: app-build-suite
+          name: package and push aws-efs-csi-driver-bundle chart
+          app_catalog: giantswarm-catalog
+          app_catalog_test: giantswarm-test-catalog
+          chart: aws-efs-csi-driver-bundle
+          <<: *job_filters
