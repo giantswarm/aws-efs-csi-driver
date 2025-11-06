@@ -7,19 +7,30 @@ metadata:
     {{- include "aws-efs-csi-driver-bundle.labels" . | nindent 4 }}
 spec:
   interval: 5m
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    remediation:
+      retries: -1
   kubeConfig:
     secretRef:
       name: {{ .Values.clusterID }}-kubeconfig
+  dependsOn:
+    - name: {{ .Values.clusterID }}-cloud-provider-aws
+      namespace: {{ .Release.Namespace }}
   chart:
     spec:
       chart: aws-efs-csi-driver
       version: {{ .Chart.Version }}
+      reconcileStrategy: ChartVersion
       {{ with .Values.helmReleaseSourceRef }}
       sourceRef:
         {{ toYaml . | nindent 8 }}
       {{ end }}
   releaseName: aws-efs-csi-driver
   targetNamespace: kube-system
+  storageNamespace: kube-system
   valuesFrom:
     - kind: ConfigMap
       name: {{ .Values.clusterID }}-aws-efs-csi-driver-config
