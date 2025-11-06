@@ -4,6 +4,13 @@
 
 nameOverride: ""
 fullnameOverride: ""
+bundleNameOverride: ""
+fullBundleNameOverride: ""
+
+helmReleaseSourceRef:
+  kind: HelmRepository
+  name: giantswarm-catalog
+  namespace: flux-giantswarm
 
 useFIPS: false
 

@@ -16,21 +16,7 @@ spec:
       {
         "Version": "2012-10-17",
         "Statement": [
-          {{- $oidcDomains := include "oidcDomains" . | fromJsonArray -}}
-          {{- range $index, $oidcDomain := $oidcDomains -}}
-          {{- if not (eq $index 0) }}, {{ end }}{
-            "Effect": "Allow",
-            "Principal": {
-              "Federated": "arn:{{ $.Values.awsPartition }}:iam::{{ $.Values.accountID }}:oidc-provider/{{ $oidcDomain }}"
-            },
-            "Action": "sts:AssumeRoleWithWebIdentity",
-            "Condition": {
-              "StringLike": {
-                "{{ $oidcDomain }}:sub": "system:serviceaccount:kube-system:aws-efs-csi-driver"
-              }
-            }
-          }
-          {{- end }}
+          {{- include "trustPolicyStatements" . | nindent 10 }}
         ]
       }
     inlinePolicy:

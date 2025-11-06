@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "aws-efs-csi-driver-bundle.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.bundleNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -12,10 +12,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "aws-efs-csi-driver-bundle.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- if .Values.fullBundleNameOverride -}}
+{{- .Values.fullBundleNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := default .Chart.Name .Values.bundleNameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -59,12 +59,22 @@ Create a string out of the map for controller tags flag
 {{- end -}}
 
 {{/*
-Get list of all provided OIDC domains
+Get trust policy statements for all provided OIDC domains
 */}}
-{{- define "oidcDomains" -}}
-{{- $oidcDomains := list .Values.oidcDomain -}}
-{{- if .Values.oidcDomains -}}
-{{- $oidcDomains = concat $oidcDomains .Values.oidcDomains -}}
-{{- end -}}
-{{- compact $oidcDomains | uniq | toJson -}}
+{{- define "trustPolicyStatements" -}}
+{{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" .Values.clusterID)) -}}
+{{- $cmvalues := fromYaml $configmap.data.values -}}
+{{- range $index, $oidcDomain := $cmvalues.oidcDomains -}}
+{{- if not (eq $index 0) }}, {{ end }}{
+  "Effect": "Allow",
+  "Principal": {
+    "Federated": "arn:{{ $cmvalues.awsPartition }}:iam::{{ $cmvalues.accountID }}:oidc-provider/{{ $oidcDomain }}"
+  },
+  "Action": "sts:AssumeRoleWithWebIdentity",
+  "Condition": {
+    "StringLike": {
+      "{{ $oidcDomain }}:sub": "system:serviceaccount:kube-system:aws-efs-csi-driver"
+    }
+  }
+}
 {{- end -}}

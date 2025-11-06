@@ -2,6 +2,28 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
+        "helmReleaseSourceRef": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "HelmRepository",
+                        "GitRepository",
+                        "Bucket"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                }
+            }
+        },
         "controller": {
             "type": "object",
             "properties": {
@@ -76,6 +98,9 @@
         "fullnameOverride": {
             "type": "string"
         },
+        "fullBundleNameOverride": {
+            "type": "string"
+        },
         "global": {
             "type": "object",
             "properties": {
@@ -107,6 +132,9 @@
             "type": "string"
         },
         "nameOverride": {
+            "type": "string"
+        },
+        "bundleNameOverride": {
             "type": "string"
         },
         "namespace": {

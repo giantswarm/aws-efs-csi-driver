@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: {{ .Values.clusterID }}-aws-efs-csi-driver
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver-bundle.labels" . | nindent 4 }}
+spec:
+  interval: 5m
+  kubeConfig:
+    secretRef:
+      name: {{ .Values.clusterID }}-kubeconfig
+  chart:
+    spec:
+      chart: aws-efs-csi-driver
+      version: {{ .Chart.AppVersion }}
+      {{ with .Values.helmReleaseSourceRef }}
+      sourceRef:
+        {{ toYaml . | nindent 8 }}
+      {{ end }}
+  releaseName: aws-efs-csi-driver
+  targetNamespace: kube-system
+  valuesFrom:
+    - kind: ConfigMap
+      name: {{ .Values.clusterID }}-aws-efs-csi-driver-config
+      valuesKey: values
+      optional: false
