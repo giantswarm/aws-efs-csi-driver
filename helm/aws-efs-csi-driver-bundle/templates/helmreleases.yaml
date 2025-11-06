@@ -13,7 +13,7 @@ spec:
   chart:
     spec:
       chart: aws-efs-csi-driver
-      version: {{ .Chart.AppVersion }}
+      version: {{ .Chart.Version }}
       {{ with .Values.helmReleaseSourceRef }}
       sourceRef:
         {{ toYaml . | nindent 8 }}
