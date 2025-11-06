@@ -78,3 +78,4 @@ Get trust policy statements for all provided OIDC domains
   }
 }
 {{- end -}}
+{{- end -}}
