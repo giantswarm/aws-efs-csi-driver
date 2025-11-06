@@ -63,7 +63,10 @@ Get trust policy statements for all provided OIDC domains
 */}}
 {{- define "trustPolicyStatements" -}}
 {{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" .Values.clusterID)) -}}
-{{- $cmvalues := fromYaml $configmap.data.values -}}
+{{- $cmvalues := dict -}}
+{{- if and $configmap $configmap.data $configmap.data.values -}}
+  {{- $cmvalues = fromYaml $configmap.data.values -}}
+{{- end -}}
 {{- range $index, $oidcDomain := $cmvalues.oidcDomains -}}
 {{- if not (eq $index 0) }}, {{ end }}{
   "Effect": "Allow",
