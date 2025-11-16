@@ -48,20 +48,9 @@ giantswarm.io/cluster: {{ .Values.clusterID | quote }}
 {{- end -}}
 
 {{/*
-Create a string out of the map for controller tags flag
-*/}}
-{{- define "aws-efs-csi-driver-bundle.tags" -}}
-{{- $tags := list -}}
-{{ range $key, $val := . }}
-{{- $tags = print $key ":" $val | append $tags -}}
-{{- end -}}
-{{- join " " $tags -}}
-{{- end -}}
-
-{{/*
 Get trust policy statements for all provided OIDC domains
 */}}
-{{- define "trustPolicyStatements" -}}
+{{- define "aws-efs-csi-driver-bundle.trustPolicyStatements" -}}
 {{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" .Values.clusterID)) -}}
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
@@ -76,7 +65,7 @@ Get trust policy statements for all provided OIDC domains
   "Action": "sts:AssumeRoleWithWebIdentity",
   "Condition": {
     "StringLike": {
-      "{{ $oidcDomain }}:sub": "system:serviceaccount:kube-system:aws-efs-csi-driver"
+      "{{ $oidcDomain }}:sub": "system:serviceaccount:kube-system:{{ $.Values.controller.serviceAccount.name }}"
     }
   }
 }

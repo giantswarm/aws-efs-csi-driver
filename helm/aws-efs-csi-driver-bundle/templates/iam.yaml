@@ -16,7 +16,7 @@ spec:
       {
         "Version": "2012-10-17",
         "Statement": [
-          {{- include "trustPolicyStatements" . | nindent 10 }}
+          {{- include "aws-efs-csi-driver-bundle.trustPolicyStatements" . | nindent 10 }}
         ]
       }
     inlinePolicy:
