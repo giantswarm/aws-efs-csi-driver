@@ -7,10 +7,7 @@ fullnameOverride: ""
 bundleNameOverride: ""
 fullBundleNameOverride: ""
 
-helmReleaseSourceRef:
-  kind: HelmRepository
-  name: giantswarm-catalog
-  namespace: flux-giantswarm
+ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
 
 useFIPS: false
 

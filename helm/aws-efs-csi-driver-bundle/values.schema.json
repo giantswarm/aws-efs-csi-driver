@@ -2,27 +2,8 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
-        "helmReleaseSourceRef": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "type": "string"
-                },
-                "kind": {
-                    "type": "string",
-                    "enum": [
-                        "HelmRepository",
-                        "GitRepository",
-                        "Bucket"
-                    ]
-                },
-                "name": {
-                    "type": "string"
-                },
-                "namespace": {
-                    "type": "string"
-                }
-            }
+        "ociRepositoryUrl": {
+            "type": "string"
         },
         "controller": {
             "type": "object",
