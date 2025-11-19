@@ -2,8 +2,8 @@
 
 # aws-efs-csi-driver chart
 
-Giant Swarm offers a aws-efs-csi-driver Managed App which can be installed in tenant clusters.
-Here we define the aws-efs-csi-driver chart with its templates and default configuration.
+Giant Swarm offers a `aws-efs-csi-driver-bundle` Managed App which can be installed in tenant clusters.
+Here we define the `aws-efs-csi-driver-bundle`, `aws-efs-csi-driver` charts with their templates and default configuration.
 
 ## Architecture
 
@@ -34,8 +34,10 @@ spec:
     inCluster: true
   name: aws-efs-csi-driver-bundle
   namespace: org-acme
-  version: 2.1.5
+  version: 3.0.0
 ```
+
+Note: remember that when mounting an EFS volume using the CSI driver, the Security Group attached to the EFS file system must allow inbound traffic to port 2049 from the cluster nodes Security Group, which has a name like `<cluster-id>-node` (following up on the example above: `coyote-node`).
 
 ## Credit
 
