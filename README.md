@@ -12,7 +12,7 @@ This repository contains two Helm charts:
 - `helm/aws-efs-csi-driver-bundle/`: Main chart installed on the management cluster, contains the workload cluster chart and the required AWS IAM role.
 - `helm/aws-efs-csi-driver/`: Workload cluster chart that contains the actual EFS driver setup.
 
-Users only need to install the main App chart on the management cluster, which in turn will deploy the workload cluster chart.
+Users only need to install the bundle chart on the management cluster, which in turn will deploy the workload cluster chart.
 
 ## Installation
 
