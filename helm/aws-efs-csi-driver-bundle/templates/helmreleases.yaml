@@ -1,4 +1,4 @@
-apiVersion: source.toolkit.fluxcd.io/v1
+apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
   name: {{ .Values.clusterID }}-aws-efs-csi-driver
@@ -10,7 +10,7 @@ spec:
   ref:
     tag: {{ .Chart.Version }}
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta2
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: {{ .Values.clusterID }}-aws-efs-csi-driver
