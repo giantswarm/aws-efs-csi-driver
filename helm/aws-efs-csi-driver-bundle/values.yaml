@@ -1,0 +1,298 @@
+# Default values for aws-efs-csi-driver.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+bundleNameOverride: ""
+fullBundleNameOverride: ""
+
+ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
+
+useFIPS: false
+
+portRangeUpperBound: "21049"
+
+image:
+  registry: gsoci.azurecr.io
+  repository: giantswarm/aws-efs-csi-driver
+  tag: "v2.1.12"
+  pullPolicy: IfNotPresent
+
+sidecars:
+  livenessProbe:
+    image:
+      registry: gsoci.azurecr.io
+      repository: giantswarm/livenessprobe
+      tag: "v2.16.0"
+      pullPolicy: IfNotPresent
+    resources: {}
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+  nodeDriverRegistrar:
+    image:
+      registry: gsoci.azurecr.io
+      repository: giantswarm/csi-node-driver-registrar
+      tag: "v2.14.0"
+      pullPolicy: IfNotPresent
+    resources: {}
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+  csiProvisioner:
+    image:
+      registry: gsoci.azurecr.io
+      repository: giantswarm/csi-provisioner
+      tag: "v5.3.0"
+      pullPolicy: IfNotPresent
+    resources: {}
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+    additionalArgs: []
+
+imagePullSecrets: []
+
+## Controller deployment variables
+
+controller:
+  # Specifies whether a deployment should be created
+  create: true
+  # Name of the CSI controller service
+  name: efs-csi-controller
+  # Number of replicas for the CSI controller service deployment
+  replicaCount: 2
+  # Number for the log level verbosity
+  logLevel: 2
+  # If set, add pv/pvc metadata to plugin create requests as parameters.
+  extraCreateMetadata: true
+  # Add additional tags to access points
+  tags:
+    {}
+    # environment: prod
+    # region: us-east-1
+  # Enable if you want the controller to also delete the
+  # path on efs when deleteing an access point
+  deleteAccessPointRootDir: false
+  podAnnotations: {}
+  podLabels: {}
+  hostNetwork: false
+  priorityClassName: system-cluster-critical
+  dnsPolicy: ClusterFirst
+  dnsConfig: {}
+  additionalLabels: {}
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+  updateStrategy: {}
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - key: efs.csi.aws.com/agent-not-ready
+      operator: Exists
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: efs-csi-controller
+          topologyKey: kubernetes.io/hostname
+  env: []
+  volumes: []
+  volumeMounts: []
+  # Specifies whether a service account should be created
+  serviceAccount:
+    create: true
+    name: efs-csi-sa
+    annotations: {}
+    ## Enable if EKS IAM for SA is used
+    #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
+  healthPort: 9909
+  regionalStsEndpoints: false
+  # Pod Disruption Budget
+  podDisruptionBudget:
+    enabled: false
+    # maxUnavailable: 1
+    minAvailable: 1
+    unhealthyPodEvictionPolicy: IfHealthyBudget
+  # securityContext on the controller pod
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
+    fsGroup: 0
+  # securityContext on the controller container
+  # Setting privileged=false will cause the "delete-access-point-root-dir" controller option to fail
+  containerSecurityContext:
+    privileged: true
+  leaderElectionRenewDeadline: 10s
+  leaderElectionLeaseDuration: 15s
+  # Timeout for Create/DeleteVolume calls to Controller. We recommend increasing for high concurrency workloads
+  timeout: 15s
+  # Number of concurrent threads controller will handle at once.
+  workerThreads: 100
+  # TSCs without the label selector stanza
+  #
+  # Example:
+  #
+  # topologySpreadConstraints:
+  #  - maxSkew: 1
+  #    topologyKey: topology.kubernetes.io/zone
+  #    whenUnsatisfiable: ScheduleAnyway
+  #  - maxSkew: 1
+  #    topologyKey: kubernetes.io/hostname
+  #    whenUnsatisfiable: ScheduleAnyway
+  topologySpreadConstraints: []
+
+## Node daemonset variables
+
+node:
+  # Number for the log level verbosity
+  logLevel: 2
+  volMetricsOptIn: false
+  volMetricsRefreshPeriod: 240
+  volMetricsFsRateLimit: 5
+  hostAliases:
+    {}
+    # For cross VPC EFS, you need to poison or overwrite the DNS for the efs volume as per
+    # https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html#wt6-efs-utils-step3
+    # implementing the suggested solution found here:
+    # https://github.com/kubernetes-sigs/aws-efs-csi-driver/issues/240#issuecomment-676849346
+    # EFS Vol ID, IP, Region
+    # "fs-01234567":
+    #   ip: 10.10.2.2
+    #   region: us-east-2
+  priorityClassName: system-node-critical
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    {}
+    # Example config which uses the AWS nameservers
+    # dnsPolicy: "None"
+    # dnsConfig:
+    #   nameservers:
+    #     - 169.254.169.253
+  podLabels: {}
+  podAnnotations: {}
+  additionalLabels: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  nodeSelector: {}
+  updateStrategy:
+    {}
+    # Override default strategy (RollingUpdate) to speed up deployment.
+    # This can be useful if helm timeouts are observed.
+    # type: OnDelete
+  tolerations:
+    - operator: Exists
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+          - matchExpressions:
+              - key: eks.amazonaws.com/compute-type
+                operator: NotIn
+                values:
+                  - fargate
+                  - hybrid
+  # Specifies whether a service account should be created
+  serviceAccount:
+    create: true
+    name: efs-csi-node-sa
+    annotations: {}
+    ## Enable if EKS IAM for SA is used
+    #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
+  healthPort: 9809
+  # securityContext on the node pod
+  securityContext:
+    # The node pod must be run as root to bind to the registration/driver sockets
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
+    fsGroup: 0
+  env: []
+  volumes: []
+  volumeMounts: []
+  kubeletPath: /var/lib/kubelet
+
+storageClasses: []
+# Add a regular StorageClass resource like:
+# - name: efs-default
+#   annotations:
+#     # Use that annotation if you want this to your default storageclass
+#     storageclass.kubernetes.io/is-default-class: "true"
+#   mountOptions:
+#   - tls
+#   parameters:
+#     provisioningMode: efs-ap
+#     fileSystemId: fs-1122aabb
+#     directoryPerms: "700"
+#     gidRangeStart: "1000"
+#     gidRangeEnd: "2000"
+#     basePath: "/dynamic_provisioning"
+#     subPathPattern: "/subPath"
+#     ensureUniqueDirectory: true
+#   reclaimPolicy: Delete
+#   volumeBindingMode: Immediate
+
+# Or StorageClass cross account like:
+# - name: efs-cross-account
+#   hasSecret: true
+#   roleCrossAccount: arn:aws:iam::751222626996:role/efs-csi-role
+#   mountOptions:
+#   - stunnel #https://github.com/kubernetes-sigs/aws-efs-csi-driver/issues/637
+#   - iam
+#   parameters:
+#     az: ap-southeast-1a
+#     basePath: /p-sg-omni-fer
+#     csi.storage.k8s.io/provisioner-secret-name: x-account2
+#     csi.storage.k8s.io/provisioner-secret-namespace: aws-efs-csi-driver
+#     directoryPerms: "700"
+#     fileSystemId: fs-0cb47d1css8fcc9a9
+#     gidRangeEnd: "2000"
+#     gidRangeStart: "1000"
+#     provisioningMode: efs-ap
+#   reclaimPolicy: Delete
+#   volumeBindingMode: Immediate
+
+# VPA
+verticalPodAutoscaler:
+  node:
+    updateMode: "Auto"
+    minAllowed:
+      cpu: 100m
+      memory: 128Mi
+    maxAllowed:
+      cpu: 400m
+      memory: 512Mi
+  controller:
+    updateMode: "Auto"
+    minAllowed:
+      cpu: 100m
+      memory: 256Mi
+    maxAllowed:
+      cpu: 400m
+      memory: 512Mi
+
+# Specifies whether to use helm hooks to apply the CSI driver
+useHelmHooksForCSIDriver: true
+
+global:
+  podSecurityStandards:
+    enforced: true

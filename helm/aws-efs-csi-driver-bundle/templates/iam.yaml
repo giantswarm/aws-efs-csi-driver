@@ -1,0 +1,73 @@
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: {{ .Values.clusterID }}-aws-efs-csi-driver-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aws-efs-csi-driver-bundle.labels" . | nindent 4 }}
+spec:
+  providerConfigRef:
+    name: {{ .Values.clusterID }}
+  forProvider:
+    tags:
+      giantswarm.io/cluster: {{ .Values.clusterID }}
+      sigs.k8s.io/cluster-api-provider-aws/cluster/{{ .Values.clusterID }}: owned
+    assumeRolePolicy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {{- include "aws-efs-csi-driver-bundle.trustPolicyStatements" . | nindent 10 }}
+        ]
+      }
+    inlinePolicy:
+      - name: aws-efs-csi-driver-policy
+        policy: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "elasticfilesystem:DescribeAccessPoints",
+                  "elasticfilesystem:DescribeFileSystems",
+                  "elasticfilesystem:DescribeMountTargets",
+                  "ec2:DescribeAvailabilityZones"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "elasticfilesystem:CreateAccessPoint"
+                ],
+                "Resource": "*",
+                "Condition": {
+                  "StringLike": {
+                    "aws:RequestTag/efs.csi.aws.com/cluster": "true"
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "elasticfilesystem:TagResource"
+                ],
+                "Resource": "*",
+                "Condition": {
+                  "StringLike": {
+                    "aws:ResourceTag/efs.csi.aws.com/cluster": "true"
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "elasticfilesystem:DeleteAccessPoint",
+                "Resource": "*",
+                "Condition": {
+                  "StringEquals": {
+                    "aws:ResourceTag/efs.csi.aws.com/cluster": "true"
+                  }
+                }
+              }
+            ]
+          }
