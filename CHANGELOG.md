@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-11-19
+
 ### Changed
 
 - Merge both the bundle and app chart into the same repository. Now the AWS EFS Driver app and the bundle containing the necessary IAM resources (managed by Crossplane) will live in this repository.
@@ -250,7 +252,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.5...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.5...v3.0.0
 [2.1.5]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.2...v2.1.3
