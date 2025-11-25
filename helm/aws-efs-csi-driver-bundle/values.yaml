@@ -34,7 +34,7 @@ sidecars:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-node-driver-registrar
-      tag: "v2.14.0"
+      tag: "v2.15.0"
       pullPolicy: IfNotPresent
     resources: {}
     securityContext:
