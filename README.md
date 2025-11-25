@@ -39,6 +39,10 @@ spec:
 
 Note: remember that when mounting an EFS volume using the CSI driver, the Security Group attached to the EFS file system must allow inbound traffic to port 2049 from the cluster nodes Security Group, which has a name like `<cluster-id>-node` (following up on the example above: `coyote-node`).
 
+## Upgrade from v2.x.x to v3.x.x
+
+v3.x.x introduces a breaking change: a new installation method for the app. Please review the [v3 release notes](https://github.com/giantswarm/aws-efs-csi-driver/releases/tag/v3.0.0) for detailed upgrade instructions and migration steps.
+
 ## Credit
 
 * https://github.com/kubernetes-sigs/aws-efs-csi-driver
