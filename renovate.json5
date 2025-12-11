@@ -6,7 +6,7 @@
   // Take `ignorePaths` from preset but override for repo-specific files
   "packageRules": [
     {
-      "matchFileNames": ["helm/aws-efs-csi-driver/values.yaml"],
+      "matchFileNames": ["helm/aws-efs-csi-driver/values.yaml", "helm/aws-efs-csi-driver-bundle/values.yaml"],
       "enabled": false,
     },
   ],
