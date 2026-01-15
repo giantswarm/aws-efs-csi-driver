@@ -48,14 +48,25 @@ giantswarm.io/cluster: {{ .Values.clusterID | quote }}
 {{- end -}}
 
 {{/*
-Get trust policy statements for all provided OIDC domains
+Fetch crossplane config ConfigMap data
 */}}
-{{- define "aws-efs-csi-driver-bundle.trustPolicyStatements" -}}
-{{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" .Values.clusterID)) -}}
+{{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
+{{- $clusterName := (include "cluster-name" .) -}}
+{{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" $clusterName)) -}}
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
   {{- $cmvalues = fromYaml $configmap.data.values -}}
+{{- else -}}
+  {{- fail (printf "Crossplane config ConfigMap %s-crossplane-config not found in namespace %s or has no data" $clusterName .Release.Namespace) -}}
 {{- end -}}
+{{- $cmvalues | toYaml -}}
+{{- end -}}
+
+{{/*
+Get trust policy statements for all provided OIDC domains
+*/}}
+{{- define "aws-efs-csi-driver-bundle.trustPolicyStatements" -}}
+{{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
 {{- range $index, $oidcDomain := $cmvalues.oidcDomains -}}
 {{- if not (eq $index 0) }}, {{ end }}{
   "Effect": "Allow",
