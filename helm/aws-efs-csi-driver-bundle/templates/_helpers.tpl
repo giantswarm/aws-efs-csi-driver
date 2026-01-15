@@ -51,7 +51,7 @@ giantswarm.io/cluster: {{ .Values.clusterID | quote }}
 Fetch crossplane config ConfigMap data
 */}}
 {{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
-{{- $clusterName := (include "cluster-name" .) -}}
+{{- $clusterName := .Values.clusterID -}}
 {{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" $clusterName)) -}}
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
