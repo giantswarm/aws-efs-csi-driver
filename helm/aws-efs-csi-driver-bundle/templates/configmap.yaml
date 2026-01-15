@@ -1,3 +1,4 @@
+{{- include "giantswarm.setValues" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

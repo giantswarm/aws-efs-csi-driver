@@ -71,3 +71,15 @@ Get trust policy statements for all provided OIDC domains
 }
 {{- end -}}
 {{- end -}}
+
+{{/*
+Set Giant Swarm specific values.
+*/}}
+{{- define "giantswarm.setValues" -}}
+{{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
+{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $cmvalues.awsPartition $cmvalues.accountID .Values.clusterID) -}}
+
+{{- if and (not .Values.clusterName) -}}
+{{- $_ := set .Values "clusterName" .Values.clusterID -}}
+{{- end -}}
+{{- end -}}
