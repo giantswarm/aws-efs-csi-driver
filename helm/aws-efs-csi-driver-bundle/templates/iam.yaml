@@ -11,6 +11,7 @@ spec:
   forProvider:
     tags:
       giantswarm.io/cluster: {{ .Values.clusterID }}
+      giantswarm.io/managed-by: {{ include "aws-efs-csi-driver-bundle.fullname" . }}
       sigs.k8s.io/cluster-api-provider-aws/cluster/{{ .Values.clusterID }}: owned
     assumeRolePolicy: |
       {
@@ -31,6 +32,9 @@ spec:
                   "elasticfilesystem:DescribeAccessPoints",
                   "elasticfilesystem:DescribeFileSystems",
                   "elasticfilesystem:DescribeMountTargets",
+                  "elasticfilesystem:ClientMount",
+                  "elasticfilesystem:ClientWrite",
+                  "elasticfilesystem:ClientRootAccess",
                   "ec2:DescribeAvailabilityZones"
                 ],
                 "Resource": "*"

@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add additional permissions to the controller IAM role.
+
 ### Changed
 
 - Document upgrade path from v2 to v3
+
+### Fixed
+
+- Configure the efs-csi-driver chart to use the IAM role managed by the bundle chart.
 
 ## [3.0.0] - 2025-11-19
 
