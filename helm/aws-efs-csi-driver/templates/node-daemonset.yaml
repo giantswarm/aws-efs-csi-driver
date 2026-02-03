@@ -10,6 +10,9 @@ metadata:
     {{ toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if or (kindIs "float64" .Values.node.revisionHistoryLimit) (kindIs "int64" .Values.node.revisionHistoryLimit) }}
+  revisionHistoryLimit: {{ .Values.node.revisionHistoryLimit }}
+  {{- end }}
   selector:
     matchLabels:
       app: efs-csi-node
@@ -80,6 +83,12 @@ spec:
             - --vol-metrics-opt-in={{ hasKey .Values.node "volMetricsOptIn" | ternary .Values.node.volMetricsOptIn false }}
             - --vol-metrics-refresh-period={{ hasKey .Values.node "volMetricsRefreshPeriod" | ternary .Values.node.volMetricsRefreshPeriod 240 }}
             - --vol-metrics-fs-rate-limit={{ hasKey .Values.node "volMetricsFsRateLimit" | ternary .Values.node.volMetricsFsRateLimit 5 }}
+            - --max-inflight-mount-calls-opt-in={{ hasKey .Values.node "maxInflightMountCallsOptIn" | ternary .Values.node.maxInflightMountCallsOptIn false }}
+            - --max-inflight-mount-calls={{ hasKey .Values.node "maxInflightMountCalls" | ternary .Values.node.maxInflightMountCalls 10 }}
+            - --volume-attach-limit-opt-in={{ hasKey .Values.node "volumeAttachLimitOptIn" | ternary .Values.node.volumeAttachLimitOptIn false }}
+            - --volume-attach-limit={{ hasKey .Values.node "volumeAttachLimit" | ternary .Values.node.volumeAttachLimit 20 }}
+            - --force-unmount-after-timeout={{ hasKey .Values.node "forceUnmountAfterTimeout" | ternary .Values.node.forceUnmountAfterTimeout false }}
+            - --unmount-timeout={{ hasKey .Values.node "unmountTimeout" | ternary .Values.node.unmountTimeout "30s" }}
           env:
             - name: CSI_ENDPOINT
               value: unix:/csi/csi.sock
@@ -89,6 +98,10 @@ spec:
                   fieldPath: spec.nodeName
             {{- if .Values.useFIPS }}
             - name: AWS_USE_FIPS_ENDPOINT
+              value: "true"
+            {{- end }}
+            {{- if .Values.node.serviceAccount.disableMutation }}
+            - name: DISABLE_TAINT_WATCHER
               value: "true"
             {{- end }}
             - name: PORT_RANGE_UPPER_BOUND

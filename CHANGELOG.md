@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-03
+
+### Changed
+
+- Upgrade upstream AWS EFS CSI Driver from v2.1.9 to v2.3.0.
+- Update sidecar images:
+  - livenessprobe: v2.16.0 -> v2.17.0
+  - csi-node-driver-registrar: v2.14.0 -> v2.15.0
+  - csi-provisioner: v5.3.0 -> v6.1.0
+
+### Added
+
+- Add `controller.revisionHistoryLimit` and `node.revisionHistoryLimit` for controlling rollback history.
+- Add `controller.socketDirVolume.emptyDir` for configuring CSI socket volume (sizeLimit, medium).
+- Add `controller.fileSystemIdRefs.enabled` for dynamic filesystem ID resolution from ConfigMap/Secret.
+- Add `node.serviceAccount.disableMutation` for disabling mutating permissions in security-sensitive environments.
+
+### Security
+
+- Multiple CVE fixes in upstream (sidecars, openssl, Golang 1.25.5).
+
 ## [3.1.0] - 2026-01-20
 
 ### Added

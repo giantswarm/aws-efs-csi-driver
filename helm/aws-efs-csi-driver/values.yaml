@@ -12,7 +12,7 @@ portRangeUpperBound: "21049"
 image:
   registry: gsoci.azurecr.io
   repository: giantswarm/aws-efs-csi-driver
-  tag: "v2.1.12"
+  tag: "v2.3.0"
   pullPolicy: IfNotPresent
 
 sidecars:
@@ -20,7 +20,7 @@ sidecars:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/livenessprobe
-      tag: "v2.16.0"
+      tag: "v2.17.0"
       pullPolicy: IfNotPresent
     resources: {}
     securityContext:
@@ -30,7 +30,7 @@ sidecars:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-node-driver-registrar
-      tag: "v2.14.0"
+      tag: "v2.15.0"
       pullPolicy: IfNotPresent
     resources: {}
     securityContext:
@@ -40,7 +40,7 @@ sidecars:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-provisioner
-      tag: "v5.3.0"
+      tag: "v6.1.0"
       pullPolicy: IfNotPresent
     resources: {}
     securityContext:
@@ -86,6 +86,7 @@ controller:
     requests:
       cpu: 100m
       memory: 128Mi
+  revisionHistoryLimit: 10
   nodeSelector:
     node-role.kubernetes.io/control-plane: ""
   updateStrategy: {}
@@ -108,6 +109,8 @@ controller:
   env: []
   volumes: []
   volumeMounts: []
+  socketDirVolume:
+    emptyDir: {}
   # Specifies whether a service account should be created
   serviceAccount:
     create: true
@@ -151,6 +154,9 @@ controller:
   #    topologyKey: kubernetes.io/hostname
   #    whenUnsatisfiable: ScheduleAnyway
   topologySpreadConstraints: []
+  # Enable reading filesystem IDs from configmap/secret
+  fileSystemIdRefs:
+    enabled: false
 
 ## Node daemonset variables
 
@@ -186,6 +192,7 @@ node:
     requests:
       cpu: 100m
       memory: 128Mi
+  revisionHistoryLimit: 10
   nodeSelector: {}
   updateStrategy:
     {}
@@ -214,6 +221,10 @@ node:
     annotations: {}
     ## Enable if EKS IAM for SA is used
     #  eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/efs-csi-role
+    # Disable mutating permissions for the node service account.
+    # When disableMutation is true, some features of the EFS CSI Driver node pods will not function, such as taint removal.
+    # Primarily useful in particularly security-sensitive environments, or on multi-tenant clusters that isolate tenants by node.
+    disableMutation: false
   healthPort: 9809
   # securityContext on the node pod
   securityContext:
