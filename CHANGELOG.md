@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-04
+
 ### Changed
 
 - Upgrade upstream AWS EFS CSI Driver from v2.1.9 to v2.3.0.
@@ -285,7 +287,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.5...v3.0.0
 [2.1.5]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.4...v2.1.5
