@@ -2,3 +2,4 @@ chart-dir: helm/aws-efs-csi-driver
 replace-chart-version-with-git: true
 generate-metadata: true
 catalog-base-url: https://giantswarm.github.io/giantswarm-catalog/
+ct-config: ./.circleci/ct-config.yaml
