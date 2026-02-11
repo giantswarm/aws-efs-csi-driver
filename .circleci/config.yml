@@ -10,23 +10,9 @@ job_filters: &job_filters
       ignore:
         - main
 
-jobs:
-  get-dependencies:
-    docker:
-      - image: giantswarm/helm-chart-testing:v3.14.0
-    steps:
-      - checkout
-      - run: |-
-          cd helm/aws-efs-csi-driver
-          helm dep up
-
 workflows:
   package-and-push-chart-on-tag:
     jobs:
-      - get-dependencies:
-          name: "template-chart"
-          <<: *job_filters
-
       - architect/push-to-app-catalog:
           context: architect
           executor: app-build-suite
@@ -34,6 +20,7 @@ workflows:
           app_catalog: giantswarm-catalog
           app_catalog_test: giantswarm-test-catalog
           chart: aws-efs-csi-driver
+          ct_config: ".circleci/ct-config.yaml"
           <<: *job_filters
 
       - architect/push-to-app-catalog:
@@ -43,5 +30,6 @@ workflows:
           app_catalog: giantswarm-catalog
           app_catalog_test: giantswarm-test-catalog
           chart: aws-efs-csi-driver-bundle
+          ct_config: ".circleci/ct-config.yaml"
           explicit_allow_chart_name_mismatch: true
           <<: *job_filters
