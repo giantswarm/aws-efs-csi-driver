@@ -1,4 +1,3 @@
-{{- include "giantswarm.setValues" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,4 +7,4 @@ metadata:
     {{- include "aws-efs-csi-driver-bundle.labels" $ | nindent 4 }}
 data:
   values: |
-  {{- (tpl (.Values | toYaml | toString) $) | nindent 4 }}
+  {{- (include "giantswarm.workloadValues" .) | nindent 4 }}

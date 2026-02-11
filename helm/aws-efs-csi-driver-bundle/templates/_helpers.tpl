@@ -84,13 +84,87 @@ Get trust policy statements for all provided OIDC domains
 {{- end -}}
 
 {{/*
-Set Giant Swarm specific values.
+Set Giant Swarm specific values — computes IRSA role ARN.
 */}}
 {{- define "giantswarm.setValues" -}}
 {{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
 {{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $cmvalues.awsPartition $cmvalues.accountID .Values.clusterID) -}}
-
 {{- if and (not .Values.clusterName) -}}
 {{- $_ := set .Values "clusterName" .Values.clusterID -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Reusable: combine GS split registry+repository into upstream single repository.
+Preserves all other keys (tag, pullPolicy, etc.) from the input dict.
+*/}}
+{{- define "giantswarm.combineImage" -}}
+{{- $result := deepCopy . -}}
+{{- $_ := set $result "repository" (printf "%s/%s" .registry .repository) -}}
+{{- $_ := unset $result "registry" -}}
+{{- $result | toYaml -}}
+{{- end -}}
+
+{{/*
+Transform flat bundle values into the nested workload chart structure.
+The workload chart expects:
+  - upstream: {} — values for the upstream subchart dependency
+  - networkPolicy: {} — extras
+  - verticalPodAutoscaler: {} — extras
+  - global: {} — extras
+  - storageClasses: [] — extras (for cross-account secrets)
+
+Keys listed in $bundleOnlyKeys and $extrasKeys are excluded from upstream.
+Any other key in .Values passes through to upstream automatically.
+*/}}
+{{- define "giantswarm.workloadValues" -}}
+{{- include "giantswarm.setValues" . -}}
+{{- $upstreamValues := dict -}}
+
+{{/* Keys that belong to the bundle chart itself (never forwarded) */}}
+{{- $bundleOnlyKeys := list "nameOverride" "fullnameOverride" "bundleNameOverride" "fullBundleNameOverride" "ociRepositoryUrl" "clusterID" "clusterName" -}}
+{{/* Keys forwarded as workload extras (not under upstream:) */}}
+{{- $extrasKeys := list "networkPolicy" "verticalPodAutoscaler" "global" -}}
+{{/* Keys with special handling */}}
+{{- $specialKeys := list "image" "sidecars" "controller" "node" "storageClasses" -}}
+{{- $reservedKeys := concat $bundleOnlyKeys $extrasKeys $specialKeys -}}
+
+{{/* Image: combine GS split format */}}
+{{- $_ := set $upstreamValues "image" (include "giantswarm.combineImage" .Values.image | fromYaml) -}}
+
+{{/* Sidecars: combine GS split format for each */}}
+{{- $sidecars := deepCopy .Values.sidecars -}}
+{{- range $name, $sidecar := .Values.sidecars -}}
+  {{- if and $sidecar.image $sidecar.image.registry $sidecar.image.repository -}}
+    {{- $_ := set (index $sidecars $name) "image" (include "giantswarm.combineImage" $sidecar.image | fromYaml) -}}
+  {{- end -}}
+{{- end -}}
+{{- $_ := set $upstreamValues "sidecars" $sidecars -}}
+
+{{/* Controller + Node: direct pass-through (GS labels already in values) */}}
+{{- $_ := set $upstreamValues "controller" (deepCopy .Values.controller) -}}
+{{- $_ := set $upstreamValues "node" (deepCopy .Values.node) -}}
+
+{{/* storageClasses: forwarded to both upstream and workload extras */}}
+{{- if .Values.storageClasses -}}
+{{- $_ := set $upstreamValues "storageClasses" .Values.storageClasses -}}
+{{- end -}}
+
+{{/* Pass through any non-reserved value to upstream (e.g. useFIPS, imagePullSecrets) */}}
+{{- range $key, $val := .Values -}}
+  {{- if not (has $key $reservedKeys) -}}
+  {{- $_ := set $upstreamValues $key $val -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Assemble workload values: upstream + extras */}}
+{{- $workloadValues := dict "upstream" $upstreamValues -}}
+{{- $_ := set $workloadValues "networkPolicy" .Values.networkPolicy -}}
+{{- $_ := set $workloadValues "verticalPodAutoscaler" .Values.verticalPodAutoscaler -}}
+{{- $_ := set $workloadValues "global" .Values.global -}}
+{{- if .Values.storageClasses -}}
+{{- $_ := set $workloadValues "storageClasses" .Values.storageClasses -}}
+{{- end -}}
+
+{{- $workloadValues | toYaml -}}
 {{- end -}}

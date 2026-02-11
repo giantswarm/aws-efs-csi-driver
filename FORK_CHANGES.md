@@ -1,64 +1,64 @@
-# GiantSwarm Fork Changes
+# Architecture: Upstream Dependency + GiantSwarm Extras
 
-This document tracks all customizations made to the upstream AWS EFS CSI Driver chart.
+This document describes how the AWS EFS CSI Driver chart is structured.
+
+## Approach
+
+Instead of maintaining a fork of the upstream chart, we use the **unmodified upstream Helm chart as a dependency** (aliased as `upstream`) and keep only GiantSwarm-specific "extras" templates in our workload chart.
 
 ## Upstream Source
 
-- **Upstream**: https://github.com/kubernetes-sigs/aws-efs-csi-driver
-- **GiantSwarm Fork**: https://github.com/giantswarm/aws-efs-csi-driver-upstream
-- **Last synced**: 2026-02-03 (upstream v2.3.0)
+- **Upstream chart**: `aws-efs-csi-driver` from `https://kubernetes-sigs.github.io/aws-efs-csi-driver/`
+- **Chart version**: 3.4.0 (appVersion 2.3.0)
+- **Dependency alias**: `upstream` (values under `upstream:` key)
 
-## Files Added by GiantSwarm
+## Workload Chart Structure
 
-| File | Purpose |
-|------|---------|
-| `templates/network-policies.yaml` | Network policies for pod communication |
-| `templates/pss-exceptions.yaml` | Kyverno PolicyExceptions for Pod Security Standards |
-| `templates/vpa.yaml` | VerticalPodAutoscaler resources for controller and node |
-| `templates/storageclass-secret.yaml` | Secret for cross-account StorageClass support |
+```
+helm/aws-efs-csi-driver/
+  Chart.yaml            # upstream chart as dependency with alias "upstream"
+  values.yaml           # upstream: section + extras at top level
+  templates/
+    _helpers.tpl         # GS labels helper (for extras resources only)
+    network-policies.yaml # NetworkPolicy for CSI driver pods
+    pss-exceptions.yaml   # Kyverno PolicyExceptions for Pod Security Standards
+    vpa.yaml              # VerticalPodAutoscaler for controller and node
+    storageclass-secret.yaml # Secrets for cross-account StorageClass support
+```
 
-## Files Modified from Upstream
+## GiantSwarm Customizations
 
-| File | Changes |
-|------|---------|
-| `templates/_helpers.tpl` | Added common GiantSwarm labels helper |
-| `templates/controller-deployment.yaml` | Added container registry templating, GiantSwarm labels |
-| `templates/controller-pdb.yaml` | Added GiantSwarm labels |
-| `templates/controller-serviceaccount.yaml` | Added IRSA role annotation using `clusterID` value |
-| `templates/csidriver.yaml` | Added GiantSwarm labels |
-| `templates/node-daemonset.yaml` | Added container registry templating, GiantSwarm labels |
-| `templates/node-serviceaccount.yaml` | Added GiantSwarm labels |
-| `templates/storageclass.yaml` | Added cross-account support with secrets |
+### Passed via upstream chart values (`upstream:` key)
+| Customization | How |
+|---------------|-----|
+| Container registry (`gsoci.azurecr.io`) | `upstream.image.repository` (full path) |
+| Sidecar registries | `upstream.sidecars.*.image.repository` (full path) |
+| Controller scheduling (nodeSelector, tolerations, affinity) | `upstream.controller.*` |
+| Node scheduling (tolerations, affinity) | `upstream.node.*` |
+| Resources | `upstream.controller.resources`, `upstream.node.resources` |
+| IRSA serviceAccount annotations | `upstream.controller.serviceAccount.annotations` (via bundle) |
+| StorageClasses | `upstream.storageClasses[]` |
+| GS labels on workloads | `upstream.controller.additionalLabels/podLabels`, `upstream.node.additionalLabels/podLabels` |
 
-## values.yaml Customizations
+### GiantSwarm extras templates
+| Template | Purpose |
+|----------|---------|
+| `network-policies.yaml` | NetworkPolicy allowing egress for CSI driver pods |
+| `pss-exceptions.yaml` | Kyverno PolicyExceptions for privileged CSI containers |
+| `vpa.yaml` | VPA for controller Deployment and node DaemonSet |
+| `storageclass-secret.yaml` | Secrets for cross-account EFS StorageClass entries |
 
-The following values differ from upstream defaults:
+## Bundle Chart
 
-### Image Configuration
-- Uses `gsoci.azurecr.io` registry with `giantswarm/*` image paths
-- Separate `registry` field for all images
+The bundle chart (`helm/aws-efs-csi-driver-bundle/`) keeps flat values (backward compatible) and transforms them into the nested `upstream:` structure via the `giantswarm.workloadValues` helper in `_helpers.tpl`. Key transforms:
+- Image `registry` + `repository` fields are combined into a single `repository` path
+- GS labels are injected into `controller.additionalLabels/podLabels` and `node.additionalLabels/podLabels`
+- IRSA annotation is computed from the crossplane-config ConfigMap
 
-### Controller Defaults
-- `nodeSelector`: Schedules on control-plane nodes
-- `tolerations`: Includes control-plane toleration
-- `affinity`: Pod anti-affinity for HA
-- `resources.requests`: Set to 100m CPU, 128Mi memory
-- `serviceAccount.name`: `efs-csi-sa` (shared with node for IRSA simplicity)
+## Upgrade Process
 
-### Node Defaults
-- `affinity`: Excludes control-plane nodes
-- `resources.requests`: Set to 100m CPU, 128Mi memory
-
-### GiantSwarm-specific Values
-- `verticalPodAutoscaler`: VPA configuration for both components
-- `global.podSecurityStandards.enforced`: PSS enforcement flag
-- `clusterID`: Used for IRSA role naming
-
-## Sync Process
-
-To sync with upstream:
-1. Run `/upstream-sync` to merge upstream changes into the GiantSwarm fork
-2. Run `vendir sync` to pull templates
-3. Update `values.yaml` manually (not managed by vendir)
-4. Regenerate `values.schema.json` with `helm schema-gen`
-5. Update CHANGELOG.md
+To upgrade the upstream chart version:
+1. Update `dependencies[0].version` in `helm/aws-efs-csi-driver/Chart.yaml`
+2. Run `helm dependency update helm/aws-efs-csi-driver/`
+3. Update image tags in `values.yaml` if needed
+4. Test with `helm template` and deploy to a test cluster
