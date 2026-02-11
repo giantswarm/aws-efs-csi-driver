@@ -11,7 +11,7 @@ job_filters: &job_filters
         - main
 
 jobs:
-  template-chart:
+  get-dependencies:
     docker:
       - image: giantswarm/helm-chart-testing:v3.14.0
     steps:
@@ -19,11 +19,14 @@ jobs:
       - run: |-
           cd helm/aws-efs-csi-driver
           helm dep up
-          helm template .
 
 workflows:
   package-and-push-chart-on-tag:
     jobs:
+      - get-dependencies:
+          name: "template-chart"
+          <<: *job_filters
+
       - architect/push-to-app-catalog:
           context: architect
           executor: app-build-suite
