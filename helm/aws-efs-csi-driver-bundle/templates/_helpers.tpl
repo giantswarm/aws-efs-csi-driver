@@ -129,13 +129,10 @@ Any other key in .Values passes through to upstream automatically.
 {{- $specialKeys := list "image" "sidecars" "controller" "node" "storageClasses" -}}
 {{- $reservedKeys := concat $bundleOnlyKeys $extrasKeys $specialKeys -}}
 
-{{/* Image: combine GS split format (only if present) */}}
-{{- if .Values.image -}}
+{{/* Image: combine GS split format */}}
 {{- $_ := set $upstreamValues "image" (include "giantswarm.combineImage" .Values.image | fromYaml) -}}
-{{- end -}}
 
-{{/* Sidecars: combine GS split format for each (only if present) */}}
-{{- if .Values.sidecars -}}
+{{/* Sidecars: combine GS split format for each */}}
 {{- $sidecars := deepCopy .Values.sidecars -}}
 {{- range $name, $sidecar := .Values.sidecars -}}
   {{- if and $sidecar.image $sidecar.image.registry $sidecar.image.repository -}}
@@ -143,15 +140,10 @@ Any other key in .Values passes through to upstream automatically.
   {{- end -}}
 {{- end -}}
 {{- $_ := set $upstreamValues "sidecars" $sidecars -}}
-{{- end -}}
 
-{{/* Controller + Node: pass through only if present */}}
-{{- if .Values.controller -}}
+{{/* Controller + Node: direct pass-through (GS labels already in values) */}}
 {{- $_ := set $upstreamValues "controller" (deepCopy .Values.controller) -}}
-{{- end -}}
-{{- if .Values.node -}}
 {{- $_ := set $upstreamValues "node" (deepCopy .Values.node) -}}
-{{- end -}}
 
 {{/* storageClasses: forwarded to both upstream and workload extras */}}
 {{- if .Values.storageClasses -}}
