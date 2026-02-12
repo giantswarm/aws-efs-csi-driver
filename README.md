@@ -7,12 +7,105 @@ Here we define the `aws-efs-csi-driver-bundle`, `aws-efs-csi-driver` charts with
 
 ## Architecture
 
-This repository contains two Helm charts:
+This repository uses a **two-chart bundle pattern** to deploy the AWS EFS CSI driver across Giant Swarm's management and workload clusters.
 
-- `helm/aws-efs-csi-driver-bundle/`: Main chart installed on the management cluster, contains the workload cluster chart and the required AWS IAM role.
-- `helm/aws-efs-csi-driver/`: Workload cluster chart that contains the actual EFS driver setup.
+### Overview
 
-Users only need to install the bundle chart on the management cluster, which in turn will deploy the workload cluster chart.
+```
+ Management Cluster                          Workload Cluster
+ ──────────────────────                      ──────────────────────
+
+ ┌─────────────────────────────────┐
+ │  aws-efs-csi-driver-bundle      │
+ │  (installed via App CR)         │
+ │                                 │
+ │  Bundle values.yaml             │
+ │  ┌───────────────────────────┐  │
+ │  │ image:                    │  │
+ │  │   registry: gsoci...      │──┼──┐
+ │  │   repository: giantswarm/ │  │  │  combined into single
+ │  │ sidecars: ...             │  │  │  upstream "repository" field
+ │  │ controller:               │  │  │
+ │  │   labels, resources,      │──┼──┤  passed through as
+ │  │   tolerations, affinity   │  │  │  upstream.controller
+ │  │ node:                     │──┼──┤  upstream.node
+ │  │   labels, resources,      │  │  │
+ │  │   affinity                │  │  │
+ │  │ networkPolicy, VPA,       │──┼──┤  forwarded as workload
+ │  │   global                  │  │  │  extras (not under upstream:)
+ │  └───────────────────────────┘  │  │
+ │                                 │  │
+ │  _helpers.tpl                   │  │
+ │  ┌───────────────────────────┐  │  │
+ │  │ giantswarm.workloadValues │  │  │
+ │  │ • Combines registry+repo  │◄─┼──┘
+ │  │ • Computes IRSA role ARN  │  │
+ │  │ • Builds nested structure │  │
+ │  └──────────┬────────────────┘  │
+ │             │                   │
+ │             ▼                   │
+ │  ┌───────────────────────────┐  │        ┌──────────────────────────┐
+ │  │ ConfigMap                 │  │        │ aws-efs-csi-driver       │
+ │  │ {clusterID}-aws-efs-csi- │  │        │ (deployed via Flux)      │
+ │  │ driver-config             │  │        │                          │
+ │  │                           │  │        │ values.yaml (extras)     │
+ │  │  data.values:             │  │        │ ┌──────────────────────┐ │
+ │  │   upstream:               │──┼────┐   │ │ networkPolicy:       │ │
+ │  │     image: ...            │  │    │   │ │   enabled: true      │ │
+ │  │     controller: ...       │  │    │   │ │ verticalPodAuto...   │ │
+ │  │     node: ...             │  │    │   │ │ global: ...          │ │
+ │  │   networkPolicy: ...      │  │    │   │ │ storageClasses: []   │ │
+ │  │   verticalPodAuto...: ... │  │    │   │ └──────────────────────┘ │
+ │  │   global: ...             │  │    │   │                          │
+ │  └───────────────────────────┘  │    │   │ Upstream subchart        │
+ │                                 │    │   │ (alias: upstream)        │
+ │  ┌───────────────────────────┐  │    │   │ ┌──────────────────────┐ │
+ │  │ Crossplane IAM Role       │  │    │   │ │ aws-efs-csi-driver   │ │
+ │  │ {clusterID}-aws-efs-csi- │  │    │   │ │ v3.4.0               │ │
+ │  │ driver-role               │  │    │   │ │                      │ │
+ │  │ • IRSA trust policy       │  │    └──►│ │ Reads values from    │ │
+ │  │ • EFS IAM permissions     │  │        │ │ upstream: key via    │ │
+ │  └───────────────────────────┘  │        │ │ Helm deep-merge      │ │
+ │                                 │        │ └──────────────────────┘ │
+ │  ┌───────────────────────────┐  │        │                          │
+ │  │ OCIRepository + HelmRelease│  │        │ GS extras templates     │
+ │  │ (Flux resources)          │──┼───────►│ ┌──────────────────────┐ │
+ │  │ • Points to workload chart│  │        │ │ NetworkPolicy        │ │
+ │  │ • valuesFrom: ConfigMap   │  │        │ │ VPA (controller+node)│ │
+ │  └───────────────────────────┘  │        │ │ PSS exceptions       │ │
+ │                                 │        │ │ StorageClass secrets  │ │
+ └─────────────────────────────────┘        │ └──────────────────────┘ │
+                                            └──────────────────────────┘
+```
+
+### Charts
+
+| Chart | Cluster | Purpose |
+|-------|---------|---------|
+| `helm/aws-efs-csi-driver-bundle/` | Management | Orchestrator. Creates the IAM role (Crossplane), Flux resources, and a ConfigMap with computed values for the workload chart. |
+| `helm/aws-efs-csi-driver/` | Workload | Driver. Wraps the unmodified [upstream chart](https://github.com/kubernetes-sigs/aws-efs-csi-driver) as a dependency (alias `upstream`) and adds GS extras (NetworkPolicy, VPA, PSS exceptions, StorageClass secrets). |
+
+### Value flow
+
+The bundle chart's `_helpers.tpl` contains a `giantswarm.workloadValues` helper that transforms flat bundle values into the nested structure the workload chart expects:
+
+1. **Image transformation** -- The bundle stores images in GS split format (`registry` + `repository`). The helper combines them into a single `repository` field that the upstream chart expects (e.g. `gsoci.azurecr.io` + `giantswarm/aws-efs-csi-driver` becomes `gsoci.azurecr.io/giantswarm/aws-efs-csi-driver`).
+
+2. **IRSA annotation** -- The helper looks up the cluster's `crossplane-config` ConfigMap to compute the IAM role ARN and injects it into `controller.serviceAccount.annotations`.
+
+3. **Upstream vs. extras routing** -- Values are split into two groups:
+   - **Upstream values** (`image`, `sidecars`, `controller`, `node`, `storageClasses`, and any non-reserved key) are nested under `upstream:` so Helm routes them to the subchart.
+   - **Extras values** (`networkPolicy`, `verticalPodAutoscaler`, `global`) stay at the top level for the GS extras templates.
+
+4. **Bundle-only keys** (`clusterID`, `ociRepositoryUrl`, name overrides) are excluded from the workload chart entirely.
+
+The resulting structure is written to a ConfigMap, which Flux's HelmRelease reads via `valuesFrom`. At deploy time, Helm deep-merges these values with the workload chart's own `values.yaml` defaults.
+
+### Why this pattern
+
+- **Unmodified upstream** -- The upstream chart is a direct Helm dependency, not a fork. Upgrades are a version bump in `Chart.yaml` + `helm dependency update`.
+- **Separation of concerns** -- IAM and Flux orchestration live on the management cluster. The workload chart knows nothing about Crossplane or multi-cluster setup.
+- **Single App CR** -- Users install the bundle once on the management cluster. Everything else is automated via Flux.
 
 ## Installation
 
