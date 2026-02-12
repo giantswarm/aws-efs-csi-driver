@@ -9,7 +9,7 @@ fullBundleNameOverride: ""
 
 ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
 
-# GS container registry (split registry+repository, combined by helper)
+# These values are mapped with logic, can't be put in the workload chart directly
 image:
   registry: gsoci.azurecr.io
   repository: giantswarm/aws-efs-csi-driver
@@ -32,87 +32,8 @@ sidecars:
       repository: giantswarm/csi-provisioner
       tag: "v6.1.0"
 
+# We need this to inject the IRSA annotation
 controller:
-  additionalLabels:
-    giantswarm.io/service-type: "managed"
-    application.giantswarm.io/team: "phoenix"
-  podLabels:
-    giantswarm.io/service-type: "managed"
-    application.giantswarm.io/team: "phoenix"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  nodeSelector:
-    node-role.kubernetes.io/control-plane: ""
-  tolerations:
-    - key: CriticalAddonsOnly
-      operator: Exists
-    - key: efs.csi.aws.com/agent-not-ready
-      operator: Exists
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchLabels:
-              app: efs-csi-controller
-          topologyKey: kubernetes.io/hostname
   serviceAccount:
     name: efs-csi-sa
     annotations: {}
-
-node:
-  additionalLabels:
-    giantswarm.io/service-type: "managed"
-    application.giantswarm.io/team: "phoenix"
-  podLabels:
-    giantswarm.io/service-type: "managed"
-    application.giantswarm.io/team: "phoenix"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: DoesNotExist
-          - matchExpressions:
-              - key: eks.amazonaws.com/compute-type
-                operator: NotIn
-                values:
-                  - fargate
-                  - hybrid
-
-storageClasses: []
-
-verticalPodAutoscaler:
-  controller:
-    updateMode: "Auto"
-    minAllowed:
-      cpu: 100m
-      memory: 256Mi
-    maxAllowed:
-      cpu: 400m
-      memory: 512Mi
-  node:
-    updateMode: "Auto"
-    minAllowed:
-      cpu: 100m
-      memory: 128Mi
-    maxAllowed:
-      cpu: 400m
-      memory: 512Mi
-
-networkPolicy:
-  enabled: true
-
-global:
-  podSecurityStandards:
-    enforced: true
