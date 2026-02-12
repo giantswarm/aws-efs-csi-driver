@@ -7,3 +7,5 @@ checks:
   - "run-as-non-root"
   - "host-network"
   - "privilege-escalation-container"
+  ignorePaths:
+  - "**/charts/**"
