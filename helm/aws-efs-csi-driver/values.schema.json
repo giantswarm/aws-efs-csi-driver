@@ -1,12 +1,15 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "upstream": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
         },
         "networkPolicy": {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
                 "enabled": {
                     "type": "boolean"
@@ -15,15 +18,18 @@
         },
         "verticalPodAutoscaler": {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
                 "controller": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "updateMode": {
                             "type": "string"
                         },
                         "minAllowed": {
                             "type": "object",
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -35,6 +41,7 @@
                         },
                         "maxAllowed": {
                             "type": "object",
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -48,12 +55,14 @@
                 },
                 "node": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "updateMode": {
                             "type": "string"
                         },
                         "minAllowed": {
                             "type": "object",
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -65,6 +74,7 @@
                         },
                         "maxAllowed": {
                             "type": "object",
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -80,9 +90,11 @@
         },
         "global": {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
                 "podSecurityStandards": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "enforced": {
                             "type": "boolean"
