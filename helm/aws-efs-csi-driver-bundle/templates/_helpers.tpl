@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "aws-efs-csi-driver-bundle.name" -}}
-{{- default .Chart.Name .Values.bundleNameOverride | trunc 63 | trimSuffix "-" -}}
+{{- .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -12,15 +12,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "aws-efs-csi-driver-bundle.fullname" -}}
-{{- if .Values.fullBundleNameOverride -}}
-{{- .Values.fullBundleNameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.bundleNameOverride -}}
+{{- $name := .Chart.Name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -122,7 +118,7 @@ Any other key in .Values passes through to upstream automatically.
 {{- $upstreamValues := dict -}}
 
 {{/* Keys that belong to the bundle chart itself (never forwarded) */}}
-{{- $bundleOnlyKeys := list "nameOverride" "fullnameOverride" "bundleNameOverride" "fullBundleNameOverride" "ociRepositoryUrl" "clusterID" "clusterName" -}}
+{{- $bundleOnlyKeys := list "ociRepositoryUrl" "clusterID" "clusterName" -}}
 {{/* Keys forwarded as workload extras (not under upstream:) */}}
 {{- $extrasKeys := list "networkPolicy" "verticalPodAutoscaler" "global" -}}
 {{/* Keys with special handling */}}

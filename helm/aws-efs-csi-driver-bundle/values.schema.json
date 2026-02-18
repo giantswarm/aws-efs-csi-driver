@@ -5,18 +5,6 @@
     "properties": {
         "ociRepositoryUrl": {
             "type": "string"
-        },
-        "nameOverride": {
-            "type": "string"
-        },
-        "fullnameOverride": {
-            "type": "string"
-        },
-        "bundleNameOverride": {
-            "type": "string"
-        },
-        "fullBundleNameOverride": {
-            "type": "string"
         }
     }
 }
