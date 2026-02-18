@@ -136,6 +136,38 @@ Note: remember that when mounting an EFS volume using the CSI driver, the Securi
 
 v3.x.x introduces a breaking change: a new installation method for the app. Please review the [v3 release notes](https://github.com/giantswarm/aws-efs-csi-driver/releases/tag/v3.0.0) for detailed upgrade instructions and migration steps.
 
+## Testing
+
+### E2E tests
+
+End-to-end tests live in `tests/e2e/` and use the [apptest-framework](https://github.com/giantswarm/apptest-framework). They install the bundle on a CAPA management cluster, provision real EFS infrastructure via Crossplane, and validate dynamic provisioning with access points on a workload cluster.
+
+**What the tests cover:**
+
+1. Crossplane creates an EFS filesystem, security group, and mount targets in the workload cluster's VPC.
+2. The bundle's HelmRelease reaches Ready on the MC.
+3. The `efs-csi-controller` Deployment and `efs-csi-node` DaemonSet are running on the WC.
+4. A StorageClass with `provisioningMode: efs-ap` dynamically provisions an access point.
+5. A writer Pod writes data to the volume; a reader Pod reads it back (verifying RWX shared access).
+6. All EFS infrastructure (access points, mount targets, filesystem, security group) is cleaned up.
+
+**From CI:**
+
+```
+/run app-test-suites
+```
+
+**Locally:**
+
+```bash
+export E2E_KUBECONFIG=/path/to/mc-kubeconfig
+export E2E_KUBECONFIG_CONTEXT=your-mc-context
+export E2E_APP_VERSION=latest
+
+cd tests/e2e
+go test ./suites/basic -v -timeout 60m
+```
+
 ## Credit
 
 * https://github.com/kubernetes-sigs/aws-efs-csi-driver
