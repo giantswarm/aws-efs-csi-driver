@@ -150,6 +150,9 @@ Any other key in .Values passes through to upstream automatically.
 {{- $_ := set $upstreamValues "storageClasses" .Values.storageClasses -}}
 {{- end -}}
 
+{{/* Preserve the original chart name so selectors stay compatible with pre-dependency upgrades */}}
+{{- $_ := set $upstreamValues "nameOverride" "aws-efs-csi-driver" -}}
+
 {{/* Pass through any non-reserved value to upstream (e.g. useFIPS, imagePullSecrets) */}}
 {{- range $key, $val := .Values -}}
   {{- if not (has $key $reservedKeys) -}}

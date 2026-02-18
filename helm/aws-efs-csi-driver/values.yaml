@@ -1,5 +1,12 @@
 # GS extras only — upstream values supplied by bundle ConfigMap.
 
+# Keep the original chart name so that app.kubernetes.io/name stays
+# "aws-efs-csi-driver" instead of the dependency alias "upstream".
+# Without this, upgrades from the old forked chart fail because
+# spec.selector.matchLabels is immutable.
+upstream:
+  nameOverride: aws-efs-csi-driver
+
 networkPolicy:
   enabled: true
 
