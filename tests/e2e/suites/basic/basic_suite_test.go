@@ -198,47 +198,45 @@ func TestBasic(t *testing.T) {
 			})
 		}).
 		AfterSuite(func() {
-			It("should clean up test resources", func() {
-				ctx := state.GetContext()
+			ctx := state.GetContext()
 
-				// Clean up WC resources while the CSI driver is still running,
-				// so that PVC deletion triggers access point removal.
-				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
-				if err == nil {
-					for _, name := range []string{"efs-reader-e2e", "efs-writer-e2e"} {
-						pod := &corev1.Pod{
-							ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespace},
-						}
-						_ = client.IgnoreNotFound(wcClient.Delete(ctx, pod))
+			// Clean up WC resources while the CSI driver is still running,
+			// so that PVC deletion triggers access point removal.
+			wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
+			if err == nil {
+				for _, name := range []string{"efs-reader-e2e", "efs-writer-e2e"} {
+					pod := &corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespace},
 					}
-
-					pvc := &corev1.PersistentVolumeClaim{
-						ObjectMeta: metav1.ObjectMeta{Name: "efs-claim-e2e", Namespace: testNamespace},
-					}
-					_ = client.IgnoreNotFound(wcClient.Delete(ctx, pvc))
-
-					// Wait for PVC to be fully deleted so the CSI driver can
-					// clean up the access point before we tear down the filesystem.
-					Eventually(func() bool {
-						err := wcClient.Get(ctx, types.NamespacedName{
-							Name:      "efs-claim-e2e",
-							Namespace: testNamespace,
-						}, &corev1.PersistentVolumeClaim{})
-						return apierrors.IsNotFound(err)
-					}).WithTimeout(5 * time.Minute).WithPolling(5 * time.Second).Should(BeTrue())
-
-					sc := &storagev1.StorageClass{
-						ObjectMeta: metav1.ObjectMeta{Name: scName},
-					}
-					_ = client.IgnoreNotFound(wcClient.Delete(ctx, sc))
+					_ = client.IgnoreNotFound(wcClient.Delete(ctx, pod))
 				}
 
-				// Clean up Crossplane EFS resources on the MC.
-				if efs != nil {
-					mcClient := state.GetFramework().MC()
-					efs.Cleanup(ctx, *mcClient)
+				pvc := &corev1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{Name: "efs-claim-e2e", Namespace: testNamespace},
 				}
-			})
+				_ = client.IgnoreNotFound(wcClient.Delete(ctx, pvc))
+
+				// Wait for PVC to be fully deleted so the CSI driver can
+				// clean up the access point before we tear down the filesystem.
+				Eventually(func() bool {
+					err := wcClient.Get(ctx, types.NamespacedName{
+						Name:      "efs-claim-e2e",
+						Namespace: testNamespace,
+					}, &corev1.PersistentVolumeClaim{})
+					return apierrors.IsNotFound(err)
+				}).WithTimeout(5 * time.Minute).WithPolling(5 * time.Second).Should(BeTrue())
+
+				sc := &storagev1.StorageClass{
+					ObjectMeta: metav1.ObjectMeta{Name: scName},
+				}
+				_ = client.IgnoreNotFound(wcClient.Delete(ctx, sc))
+			}
+
+			// Clean up Crossplane EFS resources on the MC.
+			if efs != nil {
+				mcClient := state.GetFramework().MC()
+				efs.Cleanup(ctx, *mcClient)
+			}
 		}).
 		Run(t, "EFS Dynamic Provisioning")
 }
