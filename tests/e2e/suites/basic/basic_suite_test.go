@@ -25,7 +25,7 @@ const (
 
 	efsProvisioner = "efs.csi.aws.com"
 	testNamespace  = "default"
-	scName         = "efs-dynamic-e2e"
+	scName = "efs-dynamic-e2e"
 )
 
 // Shared state between hooks and tests.
@@ -56,7 +56,7 @@ func TestBasic(t *testing.T) {
 				orgName := state.GetCluster().Organization.Name
 
 				Eventually(func() (bool, error) {
-					return helmReleaseIsReady(mcClient, clusterName, orgName)
+					return helmReleaseIsReady(*mcClient, clusterName, orgName)
 				}).
 					WithTimeout(15 * time.Minute).
 					WithPolling(10 * time.Second).
@@ -134,7 +134,7 @@ func TestBasic(t *testing.T) {
 					},
 					Spec: corev1.PersistentVolumeClaimSpec{
 						AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany},
-						StorageClassName: &scName,
+						StorageClassName: ptr(scName),
 						Resources: corev1.VolumeResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceStorage: resource.MustParse("5Gi"),
@@ -243,9 +243,9 @@ func TestBasic(t *testing.T) {
 		Run(t, "EFS Dynamic Provisioning")
 }
 
-func helmReleaseIsReady(mcClient *client.Client, clusterName, orgName string) (bool, error) {
+func helmReleaseIsReady(mcClient client.Client, clusterName, orgName string) (bool, error) {
 	hr := &helmv2.HelmRelease{}
-	err := (*mcClient).Get(state.GetContext(), types.NamespacedName{
+	err := mcClient.Get(state.GetContext(), types.NamespacedName{
 		Name:      clusterName + "-aws-efs-csi-driver",
 		Namespace: "org-" + orgName,
 	}, hr)
@@ -294,3 +294,5 @@ func newTestPod(name, namespace, pvcName string, command []string) *corev1.Pod {
 		},
 	}
 }
+
+func ptr[T any](v T) *T { return &v }
