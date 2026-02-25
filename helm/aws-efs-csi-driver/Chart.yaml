@@ -10,3 +10,10 @@ sources:
   - https://raw.githubusercontent.com/giantswarm/aws-efs-csi-driver/v2.3.0/README.md
 annotations:
   application.giantswarm.io/team: phoenix
+  io.giantswarm.application.audience: all
+  io.giantswarm.application.managed: "true"
+  io.giantswarm.application.team: phoenix
+  io.giantswarm.application.upstream-chart-version: "2.3.0"
+  io.giantswarm.application.upstream-chart-url: https://github.com/kubernetes-sigs/aws-efs-csi-driver
+  io.giantswarm.application.restrictions.cluster-singleton: "true"
+  io.giantswarm.application.restrictions.compatible-providers: "aws"
