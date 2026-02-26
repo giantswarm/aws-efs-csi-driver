@@ -1,0 +1,2 @@
+helmReleaseSourceRef:
+  name: giantswarm-test-catalog

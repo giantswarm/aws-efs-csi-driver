@@ -1,7 +1,6 @@
-package basic
+package upgrade
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,21 +22,18 @@ import (
 )
 
 const (
-	isUpgrade = false
-
 	efsProvisioner = "efs.csi.aws.com"
 	testNamespace  = "default"
-	scName = "efs-dynamic-e2e"
+	scName         = "efs-upgrade-e2e"
 )
 
-// Shared state between hooks and tests.
 var efs *efsInfra
 
-func TestBasic(t *testing.T) {
+func TestUpgrade(t *testing.T) {
 	suite.New().
 		WithInCluster(true).
 		WithInstallNamespace("").
-		WithIsUpgrade(isUpgrade).
+		WithIsUpgrade(true).
 		WithValuesFile("./values.yaml").
 		AfterClusterReady(func() {
 			It("should create EFS infrastructure via Crossplane", func() {
@@ -51,8 +47,8 @@ func TestBasic(t *testing.T) {
 				efs.Create(ctx, *mcClient)
 			})
 		}).
-		Tests(func() {
-			It("should have the HelmRelease ready on the management cluster", func() {
+		BeforeUpgrade(func() {
+			It("should have the HelmRelease ready before upgrade", func() {
 				mcClient := state.GetFramework().MC()
 				clusterName := state.GetCluster().Name
 				orgName := state.GetCluster().Organization.Name
@@ -70,61 +66,10 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(15 * time.Minute).
 					WithPolling(10 * time.Second).
-					Should(BeTrue(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate HelmRelease not ready for aws-efs-csi-driver"))
+					Should(BeTrue())
 			})
 
-			It("should have the efs-csi-controller deployment running", func() {
-				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
-				Expect(err).Should(Succeed())
-
-				Eventually(func() error {
-					var dp appsv1.Deployment
-					err := wcClient.Get(state.GetContext(), types.NamespacedName{
-						Namespace: "kube-system",
-						Name:      "efs-csi-controller",
-					}, &dp)
-					if err != nil {
-						GinkgoLogr.Info("efs-csi-controller not found yet", "error", err.Error())
-					} else {
-						GinkgoLogr.Info("efs-csi-controller found",
-							"replicas", dp.Status.Replicas,
-							"ready", dp.Status.ReadyReplicas,
-							"available", dp.Status.AvailableReplicas,
-						)
-					}
-					return err
-				}).
-					WithTimeout(10 * time.Minute).
-					WithPolling(5 * time.Second).
-					ShouldNot(HaveOccurred(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate efs-csi-controller deployment not found or not running"))
-			})
-
-			It("should have the efs-csi-node daemonset running", func() {
-				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
-				Expect(err).Should(Succeed())
-
-				Eventually(func() error {
-					var ds appsv1.DaemonSet
-					err := wcClient.Get(state.GetContext(), types.NamespacedName{
-						Namespace: "kube-system",
-						Name:      "efs-csi-node",
-					}, &ds)
-					if err != nil {
-						GinkgoLogr.Info("efs-csi-node not found yet", "error", err.Error())
-					} else {
-						GinkgoLogr.Info("efs-csi-node found",
-							"desired", ds.Status.DesiredNumberScheduled,
-							"ready", ds.Status.NumberReady,
-						)
-					}
-					return err
-				}).
-					WithTimeout(10 * time.Minute).
-					WithPolling(5 * time.Second).
-					ShouldNot(HaveOccurred(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate efs-csi-node daemonset not found or not running"))
-			})
-
-			It("should dynamically provision an EFS volume and allow shared read-write access", func() {
+			It("should write data to EFS before upgrade", func() {
 				Expect(efs).NotTo(BeNil(), "EFS infrastructure was not created")
 				Expect(efs.fileSystemID).NotTo(BeEmpty(), "EFS filesystem ID is not available")
 
@@ -132,18 +77,11 @@ func TestBasic(t *testing.T) {
 				Expect(err).Should(Succeed())
 				ctx := state.GetContext()
 
-				pvcName := "efs-claim-e2e"
-				writerPodName := "efs-writer-e2e"
-				readerPodName := "efs-reader-e2e"
-				testData := "efs-dynamic-provisioning-works"
-
 				By("Creating a StorageClass for EFS dynamic provisioning")
 				bindingMode := storagev1.VolumeBindingImmediate
 				reclaimPolicy := corev1.PersistentVolumeReclaimDelete
 				sc := &storagev1.StorageClass{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: scName,
-					},
+					ObjectMeta: metav1.ObjectMeta{Name: scName},
 					Provisioner:       efsProvisioner,
 					VolumeBindingMode: &bindingMode,
 					ReclaimPolicy:     &reclaimPolicy,
@@ -155,10 +93,10 @@ func TestBasic(t *testing.T) {
 				}
 				Expect(wcClient.Create(ctx, sc)).To(Succeed())
 
-				By("Creating a PVC that uses the EFS StorageClass")
+				By("Creating a PVC")
 				pvc := &corev1.PersistentVolumeClaim{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      pvcName,
+						Name:      "efs-claim-upgrade-e2e",
 						Namespace: testNamespace,
 					},
 					Spec: corev1.PersistentVolumeClaimSpec{
@@ -173,71 +111,139 @@ func TestBasic(t *testing.T) {
 				}
 				Expect(wcClient.Create(ctx, pvc)).To(Succeed())
 
-				By("Creating a writer Pod that mounts the EFS volume and writes data")
-				writerPod := testhelpers.NewTestPod(writerPodName, testNamespace, pvcName,
-					[]string{"sh", "-c", fmt.Sprintf("echo '%s' > /data/testfile && echo 'write-ok'", testData)},
+				By("Writing data before upgrade")
+				writerPod := testhelpers.NewTestPod("efs-pre-upgrade-writer", testNamespace, "efs-claim-upgrade-e2e",
+					[]string{"sh", "-c", "echo 'pre-upgrade-data' > /data/upgrade-test && echo 'write-ok'"},
 				)
 				Expect(wcClient.Create(ctx, writerPod)).To(Succeed())
 
-				By("Waiting for the writer Pod to succeed")
 				Eventually(func() (corev1.PodPhase, error) {
 					var pod corev1.Pod
 					err := wcClient.Get(ctx, types.NamespacedName{
-						Name:      writerPodName,
+						Name:      "efs-pre-upgrade-writer",
 						Namespace: testNamespace,
 					}, &pod)
 					if err != nil {
-						GinkgoLogr.Info("writer pod not found yet", "error", err.Error())
 						return "", err
 					}
-					GinkgoLogr.Info("writer pod status", "phase", pod.Status.Phase, "reason", pod.Status.Reason, "message", pod.Status.Message)
+					GinkgoLogr.Info("pre-upgrade writer pod", "phase", pod.Status.Phase)
 					return pod.Status.Phase, nil
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
-					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate EFS writer pod not succeeding - check pod events, CSI driver logs, and mount target connectivity"))
+					Should(Equal(corev1.PodSucceeded))
+			})
+		}).
+		Tests(func() {
+			It("should have the HelmRelease ready after upgrade", func() {
+				mcClient := state.GetFramework().MC()
+				clusterName := state.GetCluster().Name
+				orgName := state.GetCluster().Organization.Name
 
-				By("Verifying the PVC is bound")
-				var claim corev1.PersistentVolumeClaim
-				Expect(wcClient.Get(ctx, types.NamespacedName{
-					Name:      pvcName,
-					Namespace: testNamespace,
-				}, &claim)).To(Succeed())
-				Expect(claim.Status.Phase).To(Equal(corev1.ClaimBound))
+				Eventually(func() (bool, error) {
+					ready, err := testhelpers.HelmReleaseIsReady(*mcClient, clusterName, orgName)
+					if err != nil {
+						GinkgoLogr.Info("HelmRelease check failed", "error", err.Error())
+					} else if !ready {
+						GinkgoLogr.Info("HelmRelease not ready yet after upgrade")
+					} else {
+						GinkgoLogr.Info("HelmRelease is ready after upgrade")
+					}
+					return ready, err
+				}).
+					WithTimeout(15 * time.Minute).
+					WithPolling(10 * time.Second).
+					Should(BeTrue(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate HelmRelease not ready after upgrade"))
+			})
 
-				By("Creating a reader Pod that reads data from the same EFS volume")
-				readerPod := testhelpers.NewTestPod(readerPodName, testNamespace, pvcName,
-					[]string{"sh", "-c", fmt.Sprintf("cat /data/testfile | grep '%s'", testData)},
+			It("should have the efs-csi-controller running after upgrade", func() {
+				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
+				Expect(err).Should(Succeed())
+
+				Eventually(func() error {
+					var dp appsv1.Deployment
+					err := wcClient.Get(state.GetContext(), types.NamespacedName{
+						Namespace: "kube-system",
+						Name:      "efs-csi-controller",
+					}, &dp)
+					if err != nil {
+						GinkgoLogr.Info("efs-csi-controller not found", "error", err.Error())
+					} else {
+						GinkgoLogr.Info("efs-csi-controller", "ready", dp.Status.ReadyReplicas, "replicas", dp.Status.Replicas)
+					}
+					return err
+				}).
+					WithTimeout(10 * time.Minute).
+					WithPolling(5 * time.Second).
+					ShouldNot(HaveOccurred())
+			})
+
+			It("should still have access to data written before upgrade", func() {
+				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
+				Expect(err).Should(Succeed())
+				ctx := state.GetContext()
+
+				By("Reading data written before upgrade")
+				readerPod := testhelpers.NewTestPod("efs-post-upgrade-reader", testNamespace, "efs-claim-upgrade-e2e",
+					[]string{"sh", "-c", "cat /data/upgrade-test | grep 'pre-upgrade-data'"},
 				)
 				Expect(wcClient.Create(ctx, readerPod)).To(Succeed())
 
-				By("Waiting for the reader Pod to succeed, confirming shared access works")
 				Eventually(func() (corev1.PodPhase, error) {
 					var pod corev1.Pod
 					err := wcClient.Get(ctx, types.NamespacedName{
-						Name:      readerPodName,
+						Name:      "efs-post-upgrade-reader",
 						Namespace: testNamespace,
 					}, &pod)
 					if err != nil {
-						GinkgoLogr.Info("reader pod not found yet", "error", err.Error())
 						return "", err
 					}
-					GinkgoLogr.Info("reader pod status", "phase", pod.Status.Phase, "reason", pod.Status.Reason, "message", pod.Status.Message)
+					GinkgoLogr.Info("post-upgrade reader pod", "phase", pod.Status.Phase)
 					return pod.Status.Phase, nil
 				}).
 					WithTimeout(5 * time.Minute).
 					WithPolling(5 * time.Second).
-					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate EFS reader pod not succeeding - check shared volume access and pod events"))
+					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate post-upgrade reader pod - data written before upgrade should survive"))
+			})
+
+			It("should write new data after upgrade", func() {
+				wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
+				Expect(err).Should(Succeed())
+				ctx := state.GetContext()
+
+				By("Writing new data after upgrade")
+				writerPod := testhelpers.NewTestPod("efs-post-upgrade-writer", testNamespace, "efs-claim-upgrade-e2e",
+					[]string{"sh", "-c", "echo 'post-upgrade-data' > /data/post-upgrade-test && echo 'write-ok'"},
+				)
+				Expect(wcClient.Create(ctx, writerPod)).To(Succeed())
+
+				Eventually(func() (corev1.PodPhase, error) {
+					var pod corev1.Pod
+					err := wcClient.Get(ctx, types.NamespacedName{
+						Name:      "efs-post-upgrade-writer",
+						Namespace: testNamespace,
+					}, &pod)
+					if err != nil {
+						return "", err
+					}
+					GinkgoLogr.Info("post-upgrade writer pod", "phase", pod.Status.Phase)
+					return pod.Status.Phase, nil
+				}).
+					WithTimeout(10 * time.Minute).
+					WithPolling(5 * time.Second).
+					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate post-upgrade writer pod - new writes should work after upgrade"))
 			})
 		}).
 		AfterSuite(func() {
 			ctx := state.GetContext()
 
-			// Clean up WC resources while the CSI driver is still running,
-			// so that PVC deletion triggers access point removal.
 			wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
 			if err == nil {
-				for _, name := range []string{"efs-reader-e2e", "efs-writer-e2e"} {
+				for _, name := range []string{
+					"efs-pre-upgrade-writer",
+					"efs-post-upgrade-reader",
+					"efs-post-upgrade-writer",
+				} {
 					pod := &corev1.Pod{
 						ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespace},
 					}
@@ -245,15 +251,13 @@ func TestBasic(t *testing.T) {
 				}
 
 				pvc := &corev1.PersistentVolumeClaim{
-					ObjectMeta: metav1.ObjectMeta{Name: "efs-claim-e2e", Namespace: testNamespace},
+					ObjectMeta: metav1.ObjectMeta{Name: "efs-claim-upgrade-e2e", Namespace: testNamespace},
 				}
 				_ = client.IgnoreNotFound(wcClient.Delete(ctx, pvc))
 
-				// Wait for PVC to be fully deleted so the CSI driver can
-				// clean up the access point before we tear down the filesystem.
 				Eventually(func() bool {
 					err := wcClient.Get(ctx, types.NamespacedName{
-						Name:      "efs-claim-e2e",
+						Name:      "efs-claim-upgrade-e2e",
 						Namespace: testNamespace,
 					}, &corev1.PersistentVolumeClaim{})
 					return apierrors.IsNotFound(err)
@@ -265,13 +269,12 @@ func TestBasic(t *testing.T) {
 				_ = client.IgnoreNotFound(wcClient.Delete(ctx, sc))
 			}
 
-			// Clean up Crossplane EFS resources on the MC.
 			if efs != nil {
 				mcClient := state.GetFramework().MC()
 				efs.Cleanup(ctx, *mcClient)
 			}
 		}).
-		Run(t, "EFS Dynamic Provisioning")
+		Run(t, "EFS Upgrade")
 }
 
 func ptr[T any](v T) *T { return &v }
