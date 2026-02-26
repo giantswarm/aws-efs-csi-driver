@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Giant Swarm managed app for AWS EFS CSI Driver. This wraps the upstream kubernetes-sigs/aws-efs-csi-driver Helm chart with Giant Swarm customizations.
+Giant Swarm managed app for AWS EFS CSI Driver. This uses the unmodified upstream kubernetes-sigs/aws-efs-csi-driver Helm chart as a dependency, with GiantSwarm-specific extras templates.
 
 ## Architecture
 
@@ -12,28 +12,37 @@ Giant Swarm managed app for AWS EFS CSI Driver. This wraps the upstream kubernet
 - `helm/aws-efs-csi-driver-bundle/` - Installed on the **management cluster**. Creates:
   - Crossplane IAM Role for IRSA (EFS permissions)
   - Flux OCIRepository + HelmRelease to deploy the workload chart
-  - ConfigMap with values for the workload chart
-- `helm/aws-efs-csi-driver/` - Deployed to **workload clusters** via Flux. Contains the actual CSI driver resources.
+  - ConfigMap with values for the workload chart (transforms flat values into nested `upstream:` structure)
+- `helm/aws-efs-csi-driver/` - Deployed to **workload clusters** via Flux. Contains:
+  - Upstream chart as a Helm dependency (alias: `upstream`)
+  - GiantSwarm extras templates (NetworkPolicy, PSS exceptions, VPA, StorageClass secrets)
 
-**Template sync via vendir:**
-- Templates in `helm/aws-efs-csi-driver/templates/` are synced from [giantswarm/aws-efs-csi-driver-upstream](https://github.com/giantswarm/aws-efs-csi-driver-upstream)
-- The upstream fork contains Giant Swarm modifications tracked in [FORK_CHANGES.md](FORK_CHANGES.md)
-- `values.yaml` and `values.schema.json` are NOT synced - they're maintained locally
-- Changes can't be dont in the templates folder directly, we need to change it in the fork repository and sync via vendir
+**Upstream as dependency (not fork):**
+- The upstream chart is declared as a dependency in `Chart.yaml` with alias `upstream`
+- Values for the upstream chart go under the `upstream:` key in `values.yaml`
+- GiantSwarm extras templates live in `templates/` and use top-level values
+- See [FORK_CHANGES.md](FORK_CHANGES.md) for full architecture details
 
 ## Key Values
 
-The bundle's `giantswarm.setValues` helper ([_helpers.tpl:89-96](helm/aws-efs-csi-driver-bundle/templates/_helpers.tpl#L89-L96)) dynamically sets the IRSA role ARN annotation from the cluster's crossplane-config ConfigMap.
+The bundle's `giantswarm.workloadValues` helper transforms flat bundle values into the nested structure the workload chart expects:
+- Image `registry` + `repository` → single `repository` path for upstream chart
+- GS labels injected into `upstream.controller.additionalLabels/podLabels` and `upstream.node.additionalLabels/podLabels`
+- IRSA annotation computed from crossplane-config ConfigMap
 
 Important values:
-- `clusterID` - Required. Used for IRSA role naming and resource prefixes
-- `controller.serviceAccount.annotations` - Set automatically by the bundle for IRSA
+- `clusterID` - Required (bundle). Used for IRSA role naming and resource prefixes
+- `upstream.controller.serviceAccount.annotations` - Set automatically by the bundle for IRSA
 - `global.podSecurityStandards.enforced` - Controls PSS exception creation
+- `networkPolicy.enabled` - Controls NetworkPolicy creation
 
 ## CI/CD
 
 CircleCI packages and pushes both charts to `giantswarm-catalog` on tags matching `v*.*.*`. Uses the `architect` orb.
 
-## Upstream Sync Process
+## Upstream Upgrade Process
 
-Use `/gs-base:upgrade-vendir-app` command
+1. Update `dependencies[0].version` in `helm/aws-efs-csi-driver/Chart.yaml`
+2. Run `helm dependency update helm/aws-efs-csi-driver/`
+3. Update image tags in `values.yaml` if needed
+4. Test with `helm template` and deploy to a test cluster

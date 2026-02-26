@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use upstream Helm chart as a dependency instead of forking templates.
+
 ## [3.2.0] - 2026-02-04
 
 ### Changed

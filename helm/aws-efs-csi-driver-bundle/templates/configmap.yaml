@@ -1,11 +1,10 @@
-{{- include "giantswarm.setValues" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.clusterID }}-aws-efs-csi-driver-config
+  name: {{ include "aws-efs-csi-driver-bundle.clusterID" . }}-aws-efs-csi-driver-config
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "aws-efs-csi-driver-bundle.labels" $ | nindent 4 }}
 data:
   values: |
-  {{- (tpl (.Values | toYaml | toString) $) | nindent 4 }}
+  {{- (include "giantswarm.workloadValues" .) | nindent 4 }}
