@@ -3,6 +3,7 @@ package basic
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -77,7 +78,7 @@ func newEFSInfra(clusterName, orgNamespace string) *efsInfra {
 	return &efsInfra{
 		clusterName:    clusterName,
 		orgNamespace:   orgNamespace,
-		providerConfig: "default",
+		providerConfig: clusterName,
 	}
 }
 
@@ -140,7 +141,12 @@ func (e *efsInfra) DiscoverNetwork(ctx context.Context, c client.Client) error {
 		if isPublic {
 			continue
 		}
-		id, _, _ := unstructured.NestedString(sub, "id")
+		// resourceID is the actual AWS subnet ID (subnet-xxx),
+		// while id is the CAPI name (clustername-subnet-private-az).
+		id, _, _ := unstructured.NestedString(sub, "resourceID")
+		if id == "" {
+			id, _, _ = unstructured.NestedString(sub, "id")
+		}
 		az, _, _ := unstructured.NestedString(sub, "availabilityZone")
 		if id == "" || az == "" || seenAZs[az] {
 			continue
@@ -151,6 +157,14 @@ func (e *efsInfra) DiscoverNetwork(ctx context.Context, c client.Client) error {
 	if len(e.privateSubnets) == 0 {
 		return fmt.Errorf("no private subnets found in AWSCluster")
 	}
+
+	GinkgoLogr.Info("discovered network",
+		"region", e.region,
+		"vpcID", e.vpcID,
+		"vpcCIDR", e.vpcCIDR,
+		"privateSubnets", len(e.privateSubnets),
+		"providerConfig", e.providerConfig,
+	)
 
 	return nil
 }
@@ -167,6 +181,7 @@ func (e *efsInfra) DiscoverProviderConfig(ctx context.Context, c client.Client) 
 			e.providerConfig = name
 		}
 	}
+	GinkgoLogr.Info("using providerConfig", "name", e.providerConfig)
 }
 
 // Create provisions EFS infrastructure via Crossplane on the MC.
@@ -175,7 +190,7 @@ func (e *efsInfra) DiscoverProviderConfig(ctx context.Context, c client.Client) 
 func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 	prefix := e.clusterName + "-efs-e2e"
 
-	By("Creating Crossplane SecurityGroup and FileSystem")
+	By("Creating Crossplane SecurityGroup")
 	sg := newCrossplaneResource(ec2SecurityGroupGVK, prefix+"-sg", map[string]interface{}{
 		"forProvider": map[string]interface{}{
 			"region":      e.region,
@@ -191,7 +206,9 @@ func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 	})
 	Expect(c.Create(ctx, sg)).To(Succeed())
 	e.track(ec2SecurityGroupGVK, prefix+"-sg")
+	GinkgoLogr.Info("created SecurityGroup", "name", prefix+"-sg")
 
+	By("Creating Crossplane FileSystem")
 	fs := newCrossplaneResource(efsFileSystemGVK, prefix+"-fs", map[string]interface{}{
 		"forProvider": map[string]interface{}{
 			"region":          e.region,
@@ -206,19 +223,41 @@ func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 	})
 	Expect(c.Create(ctx, fs)).To(Succeed())
 	e.track(efsFileSystemGVK, prefix+"-fs")
+	GinkgoLogr.Info("created FileSystem", "name", prefix+"-fs")
 
-	By("Waiting for SecurityGroup and FileSystem AWS IDs")
+	By("Waiting for SecurityGroup AWS ID")
 	Eventually(func() string {
 		e.securityGroupID = getAtProviderID(ctx, c, ec2SecurityGroupGVK, prefix+"-sg")
+		if e.securityGroupID != "" {
+			GinkgoLogr.Info("SecurityGroup has AWS ID", "name", prefix+"-sg", "id", e.securityGroupID)
+		} else {
+			logResourceStatus(ctx, c, ec2SecurityGroupGVK, prefix+"-sg")
+		}
 		return e.securityGroupID
 	}).WithTimeout(5 * time.Minute).WithPolling(10 * time.Second).ShouldNot(BeEmpty())
 
+	By("Waiting for SecurityGroup to be ready")
+	Eventually(func() bool {
+		return isResourceReady(ctx, c, ec2SecurityGroupGVK, prefix+"-sg")
+	}).WithTimeout(5 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
+
+	By("Waiting for FileSystem AWS ID")
 	Eventually(func() string {
 		e.fileSystemID = getAtProviderID(ctx, c, efsFileSystemGVK, prefix+"-fs")
+		if e.fileSystemID != "" {
+			GinkgoLogr.Info("FileSystem has AWS ID", "name", prefix+"-fs", "id", e.fileSystemID)
+		} else {
+			logResourceStatus(ctx, c, efsFileSystemGVK, prefix+"-fs")
+		}
 		return e.fileSystemID
 	}).WithTimeout(5 * time.Minute).WithPolling(10 * time.Second).ShouldNot(BeEmpty())
 
-	By("Creating SecurityGroup ingress rule for NFS")
+	By("Waiting for FileSystem to be ready")
+	Eventually(func() bool {
+		return isResourceReady(ctx, c, efsFileSystemGVK, prefix+"-fs")
+	}).WithTimeout(5 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
+
+	By("Creating SecurityGroup ingress rule for NFS (port 2049)")
 	sgr := newCrossplaneResource(ec2SecurityGroupRuleGVK, prefix+"-sgr-nfs", map[string]interface{}{
 		"forProvider": map[string]interface{}{
 			"region":          e.region,
@@ -235,6 +274,12 @@ func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 	})
 	Expect(c.Create(ctx, sgr)).To(Succeed())
 	e.track(ec2SecurityGroupRuleGVK, prefix+"-sgr-nfs")
+	GinkgoLogr.Info("created SecurityGroupRule", "name", prefix+"-sgr-nfs", "sgID", e.securityGroupID, "cidr", e.vpcCIDR)
+
+	By("Waiting for SecurityGroupRule to be ready")
+	Eventually(func() bool {
+		return isResourceReady(ctx, c, ec2SecurityGroupRuleGVK, prefix+"-sgr-nfs")
+	}).WithTimeout(5 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
 
 	By(fmt.Sprintf("Creating MountTargets in %d private subnets", len(e.privateSubnets)))
 	for _, subnet := range e.privateSubnets {
@@ -252,15 +297,23 @@ func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 		})
 		Expect(c.Create(ctx, mt)).To(Succeed())
 		e.track(efsMountTargetGVK, mtName)
+		GinkgoLogr.Info("created MountTarget", "name", mtName, "subnet", subnet.id, "az", subnet.az, "fsID", e.fileSystemID)
 	}
 
-	By("Waiting for MountTargets to be ready")
+	By("Waiting for all MountTargets to be ready")
 	for _, subnet := range e.privateSubnets {
 		mtName := prefix + "-mt-" + subnet.az
+		By(fmt.Sprintf("Waiting for MountTarget %s (%s) to be ready", mtName, subnet.az))
 		Eventually(func() bool {
 			return isResourceReady(ctx, c, efsMountTargetGVK, mtName)
 		}).WithTimeout(10 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
 	}
+
+	GinkgoLogr.Info("all EFS infrastructure is ready",
+		"fileSystemID", e.fileSystemID,
+		"securityGroupID", e.securityGroupID,
+		"mountTargets", len(e.privateSubnets),
+	)
 }
 
 // Cleanup deletes all Crossplane resources in reverse creation order and
@@ -275,16 +328,24 @@ func (e *efsInfra) Cleanup(ctx context.Context, c client.Client) {
 		err := c.Delete(ctx, obj)
 		if err != nil && !apierrors.IsNotFound(err) {
 			GinkgoLogr.Error(err, "failed to delete", "kind", ref.gvk.Kind, "name", ref.name)
+		} else {
+			GinkgoLogr.Info("deleting resource", "kind", ref.gvk.Kind, "name", ref.name)
 		}
 	}
 
 	By("Waiting for Crossplane resources to be removed")
 	for _, ref := range e.created {
+		By(fmt.Sprintf("Waiting for %s/%s to be deleted", ref.gvk.Kind, ref.name))
 		Eventually(func() bool {
 			obj := &unstructured.Unstructured{}
 			obj.SetGroupVersionKind(ref.gvk)
 			err := c.Get(ctx, types.NamespacedName{Name: ref.name}, obj)
-			return apierrors.IsNotFound(err)
+			if apierrors.IsNotFound(err) {
+				GinkgoLogr.Info("resource deleted", "kind", ref.gvk.Kind, "name", ref.name)
+				return true
+			}
+			logResourceStatus(ctx, c, ref.gvk, ref.name)
+			return false
 		}).WithTimeout(10 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
 	}
 }
@@ -305,22 +366,27 @@ func getAtProviderID(ctx context.Context, c client.Client, gvk schema.GroupVersi
 	obj := &unstructured.Unstructured{}
 	obj.SetGroupVersionKind(gvk)
 	if err := c.Get(ctx, types.NamespacedName{Name: name}, obj); err != nil {
+		GinkgoLogr.Info("resource not found", "kind", gvk.Kind, "name", name, "error", err.Error())
 		return ""
 	}
 	id, _, _ := unstructured.NestedString(obj.Object, "status", "atProvider", "id")
 	return id
 }
 
-func isResourceReady(ctx context.Context, c client.Client, gvk schema.GroupVersionKind, name string) bool {
+// logResourceStatus logs all conditions for a Crossplane resource.
+func logResourceStatus(ctx context.Context, c client.Client, gvk schema.GroupVersionKind, name string) {
 	obj := &unstructured.Unstructured{}
 	obj.SetGroupVersionKind(gvk)
 	if err := c.Get(ctx, types.NamespacedName{Name: name}, obj); err != nil {
-		return false
+		GinkgoLogr.Info("cannot fetch resource status", "kind", gvk.Kind, "name", name, "error", err.Error())
+		return
 	}
 	conditions, ok, _ := unstructured.NestedSlice(obj.Object, "status", "conditions")
-	if !ok {
-		return false
+	if !ok || len(conditions) == 0 {
+		GinkgoLogr.Info("resource has no conditions yet", "kind", gvk.Kind, "name", name)
+		return
 	}
+	var parts []string
 	for _, c := range conditions {
 		cond, ok := c.(map[string]interface{})
 		if !ok {
@@ -328,9 +394,41 @@ func isResourceReady(ctx context.Context, c client.Client, gvk schema.GroupVersi
 		}
 		t, _, _ := unstructured.NestedString(cond, "type")
 		s, _, _ := unstructured.NestedString(cond, "status")
+		reason, _, _ := unstructured.NestedString(cond, "reason")
+		msg, _, _ := unstructured.NestedString(cond, "message")
+		parts = append(parts, fmt.Sprintf("%s=%s (%s: %s)", t, s, reason, msg))
+	}
+	GinkgoLogr.Info("resource status", "kind", gvk.Kind, "name", name, "conditions", strings.Join(parts, " | "))
+}
+
+func isResourceReady(ctx context.Context, c client.Client, gvk schema.GroupVersionKind, name string) bool {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(gvk)
+	if err := c.Get(ctx, types.NamespacedName{Name: name}, obj); err != nil {
+		GinkgoLogr.Info("resource not found", "kind", gvk.Kind, "name", name, "error", err.Error())
+		return false
+	}
+	conditions, ok, _ := unstructured.NestedSlice(obj.Object, "status", "conditions")
+	if !ok {
+		GinkgoLogr.Info("resource has no conditions yet", "kind", gvk.Kind, "name", name)
+		return false
+	}
+	var parts []string
+	for _, c := range conditions {
+		cond, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		t, _, _ := unstructured.NestedString(cond, "type")
+		s, _, _ := unstructured.NestedString(cond, "status")
+		reason, _, _ := unstructured.NestedString(cond, "reason")
+		msg, _, _ := unstructured.NestedString(cond, "message")
+		parts = append(parts, fmt.Sprintf("%s=%s (%s: %s)", t, s, reason, msg))
 		if t == "Ready" && s == "True" {
+			GinkgoLogr.Info("resource is ready", "kind", gvk.Kind, "name", name)
 			return true
 		}
 	}
+	GinkgoLogr.Info("resource not ready", "kind", gvk.Kind, "name", name, "conditions", strings.Join(parts, " | "))
 	return false
 }

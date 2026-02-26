@@ -1,4 +1,24 @@
-# GS extras only — upstream values supplied by bundle ConfigMap.
+# Default values for the aws-efs-csi-driver workload chart.
+#
+# This chart is deployed to workload clusters via Flux. Values here are
+# defaults that get deep-merged with the bundle-generated ConfigMap.
+#
+# Values are split into two categories:
+#
+#   UPSTREAM  – Nested under `upstream:`. Helm routes these to the unmodified
+#               upstream aws-efs-csi-driver subchart (declared as a dependency
+#               with alias "upstream" in Chart.yaml).
+#
+#   EXTRAS   – Top-level keys consumed by Giant Swarm extras templates in
+#              this chart's templates/ directory (NetworkPolicy, VPA, PSS
+#              exceptions, StorageClass secrets).
+#
+# At deploy time the bundle's ConfigMap supplies additional upstream values
+# (images, controller/node config, IRSA annotations) which Helm deep-merges
+# with these defaults.
+
+# ─── UPSTREAM ────────────────────────────────────────────────────────────────
+# Values under `upstream:` are passed directly to the upstream subchart.
 
 # Keep the original chart name so that app.kubernetes.io/name stays
 # "aws-efs-csi-driver" instead of the dependency alias "upstream".
@@ -6,6 +26,10 @@
 # spec.selector.matchLabels is immutable.
 upstream:
   nameOverride: aws-efs-csi-driver
+
+# ─── EXTRAS ──────────────────────────────────────────────────────────────────
+# Top-level values consumed by Giant Swarm extras templates (not the upstream
+# subchart).
 
 networkPolicy:
   enabled: true

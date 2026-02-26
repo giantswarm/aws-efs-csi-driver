@@ -5,6 +5,18 @@
 Giant Swarm offers a `aws-efs-csi-driver-bundle` Managed App which can be installed in tenant clusters.
 Here we define the `aws-efs-csi-driver-bundle`, `aws-efs-csi-driver` charts with their templates and default configuration.
 
+## Key terminology
+
+This repository uses three terms to describe where configuration lives and how it flows:
+
+| Term | Where it lives | What it does |
+|------|---------------|--------------|
+| **Bundle** | Management cluster (`helm/aws-efs-csi-driver-bundle/`) | Values consumed only by the bundle chart. They drive management-cluster resources (Crossplane IAM role, Flux resources) and are **never** forwarded to the workload cluster. Examples: `clusterID`, `ociRepositoryUrl`. |
+| **Upstream** | Workload cluster, under the `upstream:` key | Values routed to the **unmodified** [upstream Helm chart](https://github.com/kubernetes-sigs/aws-efs-csi-driver) (declared as a subchart dependency with alias `upstream`). These control the CSI driver itself: images, controller/node settings, service accounts, tolerations, etc. The bundle helper transforms flat values (e.g. split `registry`+`repository`) into the nested `upstream:` structure the subchart expects. |
+| **Extras** | Workload cluster, at the top level (not under `upstream:`) | Values consumed by Giant Swarm-specific templates that live alongside the upstream subchart. These add operational features the upstream chart doesn't provide: `networkPolicy`, `verticalPodAutoscaler`, `global.podSecurityStandards`, and `storageClasses`. |
+
+Both the bundle's `values.yaml` and the workload chart's `values.yaml` are annotated with section headers (`BUNDLE-ONLY`, `UPSTREAM`, `EXTRAS`) so you can see at a glance where each value ends up.
+
 ## Architecture
 
 This repository uses a **two-chart bundle pattern** to deploy the AWS EFS CSI driver across Giant Swarm's management and workload clusters.
@@ -157,16 +169,48 @@ End-to-end tests live in `tests/e2e/` and use the [apptest-framework](https://gi
 /run app-test-suites
 ```
 
-**Locally:**
+**Locally (against an existing cluster):**
+
+The apptest-framework requires `E2E_KUBECONFIG_CONTEXT` to match a known provider name (`capa`, `eks`, `capv`, `capz`, etc.), so you need a kubeconfig where the MC context is named accordingly.
+
+1. Create a kubeconfig with the correct context name:
 
 ```bash
-export E2E_KUBECONFIG=/path/to/mc-kubeconfig
-export E2E_KUBECONFIG_CONTEXT=your-mc-context
-export E2E_APP_VERSION=latest
-
-cd tests/e2e
-go test ./suites/basic -v -timeout 60m
+# Login to the MC with a context named "capa"
+KUBECONFIG=/tmp/e2e-kubeconfig.yaml tsh kube login <mc-name> --set-context-name=capa
 ```
+
+2. Set environment variables:
+
+```bash
+export E2E_KUBECONFIG="/tmp/e2e-kubeconfig.yaml"
+export E2E_KUBECONFIG_CONTEXT="capa"
+export E2E_APP_VERSION="<chart-version-from-test-catalog>"
+
+# To reuse an existing workload cluster (skip cluster creation):
+export E2E_WC_NAME="<cluster-name>"
+export E2E_WC_NAMESPACE="org-<org-name>"
+export E2E_WC_KEEP="true"  # Prevent cluster deletion after tests
+```
+
+3. Compile and run the test binary (the framework finds `config.yaml` relative to the binary, so `go test` alone won't work):
+
+```bash
+cd tests/e2e
+go test -c -o suites/basic/basic.test ./suites/basic/
+cd suites/basic
+./basic.test -test.v -test.timeout 60m
+```
+
+**Finding the chart version:**
+
+For branch builds, check the test catalog for the version corresponding to your commit:
+
+```bash
+curl -s "https://giantswarm.github.io/giantswarm-test-catalog/index.yaml" | grep -A5 "aws-efs-csi-driver-bundle:"
+```
+
+For tagged releases, use the version from `giantswarm` catalog (e.g. `3.2.0`).
 
 ## Credit
 

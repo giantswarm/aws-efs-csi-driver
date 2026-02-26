@@ -1,8 +1,38 @@
-# Default values for aws-efs-csi-driver.
+# Default values for aws-efs-csi-driver-bundle.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+#
+# Values are split into three categories:
+#
+#   BUNDLE-ONLY  – Used exclusively by the bundle chart on the management
+#                  cluster. Never forwarded to the workload chart.
+#
+#   UPSTREAM     – Forwarded to the workload chart under the `upstream:` key
+#                  so Helm routes them to the upstream aws-efs-csi-driver
+#                  subchart. The bundle helper combines split registry+repository
+#                  fields into a single path the upstream chart expects.
+#
+#   EXTRAS       – Forwarded to the workload chart at the top level (not under
+#                  `upstream:`). Consumed by Giant Swarm extras templates
+#                  (NetworkPolicy, VPA, PSS exceptions, etc.).
+#
+# See the giantswarm.workloadValues helper in templates/_helpers.tpl for the
+# exact transformation logic.
+
+# ─── BUNDLE-ONLY ─────────────────────────────────────────────────────────────
+# These values are consumed by the bundle chart on the management cluster only.
+# They are excluded from the workload chart ConfigMap.
 
 ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
+
+# clusterID is set automatically from the App CR / cluster-values ConfigMap.
+# It drives IRSA role naming and Flux resource prefixes.
+# clusterID: ""
+
+# ─── UPSTREAM ────────────────────────────────────────────────────────────────
+# These values are nested under `upstream:` in the workload chart ConfigMap.
+# They configure the unmodified upstream aws-efs-csi-driver subchart.
+# Note: the helper combines registry + repository into a single path
+# (e.g. gsoci.azurecr.io/giantswarm/aws-efs-csi-driver).
 
 # GS container registry (split registry+repository, combined by helper)
 image:
@@ -86,6 +116,11 @@ node:
                   - hybrid
 
 storageClasses: []
+
+# ─── EXTRAS ──────────────────────────────────────────────────────────────────
+# These values are forwarded to the workload chart at the TOP LEVEL (not under
+# upstream:). They are consumed by Giant Swarm extras templates, not the
+# upstream subchart.
 
 verticalPodAutoscaler:
   controller:

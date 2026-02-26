@@ -57,7 +57,15 @@ func TestBasic(t *testing.T) {
 				orgName := state.GetCluster().Organization.Name
 
 				Eventually(func() (bool, error) {
-					return helmReleaseIsReady(*mcClient, clusterName, orgName)
+					ready, err := helmReleaseIsReady(*mcClient, clusterName, orgName)
+					if err != nil {
+						GinkgoLogr.Info("HelmRelease check failed", "error", err.Error())
+					} else if !ready {
+						GinkgoLogr.Info("HelmRelease not ready yet", "name", clusterName+"-aws-efs-csi-driver")
+					} else {
+						GinkgoLogr.Info("HelmRelease is ready", "name", clusterName+"-aws-efs-csi-driver")
+					}
+					return ready, err
 				}).
 					WithTimeout(15 * time.Minute).
 					WithPolling(10 * time.Second).
@@ -70,10 +78,20 @@ func TestBasic(t *testing.T) {
 
 				Eventually(func() error {
 					var dp appsv1.Deployment
-					return wcClient.Get(state.GetContext(), types.NamespacedName{
+					err := wcClient.Get(state.GetContext(), types.NamespacedName{
 						Namespace: "kube-system",
 						Name:      "efs-csi-controller",
 					}, &dp)
+					if err != nil {
+						GinkgoLogr.Info("efs-csi-controller not found yet", "error", err.Error())
+					} else {
+						GinkgoLogr.Info("efs-csi-controller found",
+							"replicas", dp.Status.Replicas,
+							"ready", dp.Status.ReadyReplicas,
+							"available", dp.Status.AvailableReplicas,
+						)
+					}
+					return err
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
@@ -86,10 +104,19 @@ func TestBasic(t *testing.T) {
 
 				Eventually(func() error {
 					var ds appsv1.DaemonSet
-					return wcClient.Get(state.GetContext(), types.NamespacedName{
+					err := wcClient.Get(state.GetContext(), types.NamespacedName{
 						Namespace: "kube-system",
 						Name:      "efs-csi-node",
 					}, &ds)
+					if err != nil {
+						GinkgoLogr.Info("efs-csi-node not found yet", "error", err.Error())
+					} else {
+						GinkgoLogr.Info("efs-csi-node found",
+							"desired", ds.Status.DesiredNumberScheduled,
+							"ready", ds.Status.NumberReady,
+						)
+					}
+					return err
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
@@ -159,8 +186,10 @@ func TestBasic(t *testing.T) {
 						Namespace: testNamespace,
 					}, &pod)
 					if err != nil {
+						GinkgoLogr.Info("writer pod not found yet", "error", err.Error())
 						return "", err
 					}
+					GinkgoLogr.Info("writer pod status", "phase", pod.Status.Phase, "reason", pod.Status.Reason, "message", pod.Status.Message)
 					return pod.Status.Phase, nil
 				}).
 					WithTimeout(10 * time.Minute).
@@ -189,8 +218,10 @@ func TestBasic(t *testing.T) {
 						Namespace: testNamespace,
 					}, &pod)
 					if err != nil {
+						GinkgoLogr.Info("reader pod not found yet", "error", err.Error())
 						return "", err
 					}
+					GinkgoLogr.Info("reader pod status", "phase", pod.Status.Phase, "reason", pod.Status.Reason, "message", pod.Status.Message)
 					return pod.Status.Phase, nil
 				}).
 					WithTimeout(5 * time.Minute).
