@@ -28,6 +28,25 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
+Resolve clusterID: use .Values.clusterID if set, otherwise derive from
+the release name by stripping known chart name suffixes.
+*/}}
+{{- define "aws-efs-csi-driver-bundle.clusterID" -}}
+{{- if .Values.clusterID -}}
+  {{- .Values.clusterID -}}
+{{- else -}}
+  {{- $name := .Release.Name -}}
+  {{- range $suffix := list (printf "-%s" $.Chart.Name) "-aws-efs-csi-driver-bundle" -}}
+    {{- $name = trimSuffix $suffix $name -}}
+  {{- end -}}
+  {{- if eq $name .Release.Name -}}
+    {{- fail "clusterID not set and cannot derive cluster name from release name" -}}
+  {{- end -}}
+  {{- $name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Common labels
 */}}
 {{- define "aws-efs-csi-driver-bundle.labels" -}}
@@ -40,14 +59,14 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 giantswarm.io/service-type: "managed"
 application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
-giantswarm.io/cluster: {{ .Values.clusterID | quote }}
+giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quote }}
 {{- end -}}
 
 {{/*
 Fetch crossplane config ConfigMap data
 */}}
 {{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
-{{- $clusterName := .Values.clusterID -}}
+{{- $clusterName := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
 {{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" $clusterName)) -}}
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
@@ -84,9 +103,10 @@ Set Giant Swarm specific values — computes IRSA role ARN.
 */}}
 {{- define "giantswarm.setValues" -}}
 {{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
-{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $cmvalues.awsPartition $cmvalues.accountID .Values.clusterID) -}}
+{{- $clusterID := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
+{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $cmvalues.awsPartition $cmvalues.accountID $clusterID) -}}
 {{- if and (not .Values.clusterName) -}}
-{{- $_ := set .Values "clusterName" .Values.clusterID -}}
+{{- $_ := set .Values "clusterName" $clusterID -}}
 {{- end -}}
 {{- end -}}
 
