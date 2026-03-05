@@ -1,6 +1,0 @@
-appName: "aws-efs-csi-driver-bundle"
-repoName: "aws-efs-csi-driver"
-appCatalog: "giantswarm"
-
-providers:
-  - capa
