@@ -21,7 +21,6 @@ Giant Swarm managed app for AWS EFS CSI Driver. This uses the unmodified upstrea
 - The upstream chart is declared as a dependency in `Chart.yaml` with alias `upstream`
 - Values for the upstream chart go under the `upstream:` key in `values.yaml`
 - GiantSwarm extras templates live in `templates/` and use top-level values
-- See [FORK_CHANGES.md](FORK_CHANGES.md) for full architecture details
 
 ## Key Values
 
