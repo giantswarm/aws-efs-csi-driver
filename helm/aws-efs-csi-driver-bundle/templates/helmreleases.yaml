@@ -9,7 +9,7 @@ spec:
   url: {{ .Values.ociRepositoryUrl }}
   interval: 1h # Our versions are immutable, so there's no need to check for updates.
   ref:
-    tag: {{ .Chart.Version }}
+    tag: {{ .Chart.AppVersion }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
