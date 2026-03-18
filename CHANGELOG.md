@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use upstream Helm chart as a dependency instead of forking templates.
+- Update ABS config to replace `.appVersion` in Chart.yaml with version detected by ABS.
+
+### Fixed
+
+- Use `.Chart.AppVersion` instead of `.Chart.Version` for OCIRepository tag.
 
 ## [3.2.0] - 2026-02-04
 
