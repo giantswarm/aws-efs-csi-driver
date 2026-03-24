@@ -1,9 +1,0 @@
-apiVersion: vendir.k14s.io/v1alpha1
-directories:
-- contents:
-  - git:
-      commitTitle: Refactor service account annotations for flexibility...
-      sha: 96eb41a879fc85e662f4b5ea57477e32f1fd78f3
-    path: .
-  path: helm/aws-efs-csi-driver/templates
-kind: LockConfig

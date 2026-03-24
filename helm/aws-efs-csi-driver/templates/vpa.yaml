@@ -2,7 +2,7 @@
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
-  name: {{ .Values.controller.name }}-vpa
+  name: efs-csi-controller-vpa
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
@@ -10,7 +10,7 @@ spec:
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Values.controller.name }}
+    name: efs-csi-controller
   updatePolicy:
     updateMode: {{ .Values.verticalPodAutoscaler.controller.updateMode }}
     {{- with .Values.verticalPodAutoscaler.controller.evictionRequirements }}

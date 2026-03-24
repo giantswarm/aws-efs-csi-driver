@@ -17,3 +17,8 @@ annotations:
   io.giantswarm.application.upstream-chart-url: https://github.com/kubernetes-sigs/aws-efs-csi-driver
   io.giantswarm.application.restrictions.cluster-singleton: "true"
   io.giantswarm.application.restrictions.compatible-providers: "aws"
+dependencies:
+  - name: aws-efs-csi-driver
+    alias: upstream
+    version: "3.4.0"
+    repository: "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
