@@ -10,3 +10,8 @@ sources:
   - https://raw.githubusercontent.com/giantswarm/aws-efs-csi-driver/v2.3.0/README.md
 annotations:
   application.giantswarm.io/team: phoenix
+dependencies:
+  - name: aws-efs-csi-driver
+    alias: upstream
+    version: "3.4.0"
+    repository: "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
