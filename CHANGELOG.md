@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Migrate chart metadata annotations to `io.giantswarm.application.*` format for both the app and bundle charts.
 - Use upstream Helm chart as a dependency instead of forking templates.
 - Update ABS config to replace `.appVersion` in Chart.yaml with version detected by ABS.
 
