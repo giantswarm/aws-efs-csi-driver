@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-03-24
+
 ### Changed
 
 - Migrate chart metadata annotations to `io.giantswarm.application.*` format for both the app and bundle charts.
@@ -297,7 +299,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v2.1.5...v3.0.0
