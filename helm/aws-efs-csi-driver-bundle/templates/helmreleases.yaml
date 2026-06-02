@@ -1,4 +1,4 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   name: {{ include "aws-efs-csi-driver-bundle.clusterID" . }}-aws-efs-csi-driver
