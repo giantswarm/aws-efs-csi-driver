@@ -7,9 +7,8 @@ import (
 
 	"e2e/internal/testhelpers"
 
-	"github.com/giantswarm/apptest-framework/v2/pkg/state"
-	"github.com/giantswarm/apptest-framework/v2/pkg/suite"
-	"github.com/giantswarm/clustertest/v2/pkg/failurehandler"
+	"github.com/giantswarm/apptest-framework/v5/pkg/state"
+	"github.com/giantswarm/apptest-framework/v5/pkg/suite"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,7 +26,7 @@ const (
 
 	efsProvisioner = "efs.csi.aws.com"
 	testNamespace  = "default"
-	scName = "efs-dynamic-e2e"
+	scName         = "efs-dynamic-e2e"
 )
 
 // Shared state between hooks and tests.
@@ -70,7 +69,7 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(15 * time.Minute).
 					WithPolling(10 * time.Second).
-					Should(BeTrue(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate HelmRelease not ready for aws-efs-csi-driver"))
+					Should(BeTrue())
 			})
 
 			It("should have the efs-csi-controller deployment running", func() {
@@ -96,7 +95,7 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
-					ShouldNot(HaveOccurred(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate efs-csi-controller deployment not found or not running"))
+					ShouldNot(HaveOccurred())
 			})
 
 			It("should have the efs-csi-node daemonset running", func() {
@@ -121,7 +120,7 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
-					ShouldNot(HaveOccurred(), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate efs-csi-node daemonset not found or not running"))
+					ShouldNot(HaveOccurred())
 			})
 
 			It("should dynamically provision an EFS volume and allow shared read-write access", func() {
@@ -195,7 +194,7 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(10 * time.Minute).
 					WithPolling(5 * time.Second).
-					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate EFS writer pod not succeeding - check pod events, CSI driver logs, and mount target connectivity"))
+					Should(Equal(corev1.PodSucceeded))
 
 				By("Verifying the PVC is bound")
 				var claim corev1.PersistentVolumeClaim
@@ -227,7 +226,7 @@ func TestBasic(t *testing.T) {
 				}).
 					WithTimeout(5 * time.Minute).
 					WithPolling(5 * time.Second).
-					Should(Equal(corev1.PodSucceeded), failurehandler.LLMPrompt(state.GetFramework(), state.GetCluster(), "Investigate EFS reader pod not succeeding - check shared volume access and pod events"))
+					Should(Equal(corev1.PodSucceeded))
 			})
 		}).
 		AfterSuite(func() {
