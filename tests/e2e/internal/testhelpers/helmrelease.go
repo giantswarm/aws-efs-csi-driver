@@ -2,7 +2,7 @@ package testhelpers
 
 import (
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
-	"github.com/giantswarm/apptest-framework/v2/pkg/state"
+	"github.com/giantswarm/apptest-framework/v5/pkg/state"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
