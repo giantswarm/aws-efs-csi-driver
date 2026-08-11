@@ -1,0 +1,11 @@
+# Values used only by app-build-suite's HelmTemplateValidator (`helm template`).
+#
+# aws-efs-csi-driver-bundle deliberately `fail`s when clusterID can't be
+# resolved: on a real cluster it comes from the App CR / cluster-values
+# ConfigMap, or is derived from the release-name prefix. `helm template` renders
+# with default values and the release name `abs-validation`, so neither source
+# exists and the render aborts. Supplying a placeholder here lets the validator
+# do its actual job — checking the rendered manifests are valid YAML.
+#
+# Not used at install time, and not part of the packaged chart.
+clusterID: abs-validation
