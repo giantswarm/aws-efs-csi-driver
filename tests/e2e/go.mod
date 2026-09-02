@@ -3,7 +3,7 @@ module e2e
 go 1.26.3
 
 replace (
-	github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.6.0
+	github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.6.1
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 )
 
