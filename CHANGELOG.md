@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update OCIRepository version to v1.
+- Update upstream `aws-efs-csi-driver` chart to `4.5.0` (was `3.4.1`), which moves the driver image from `v2.3.1` to `v3.5.0` and refreshes the `csi-node-driver-registrar` and `livenessprobe` sidecars. Upstream chart declares `kubeVersion: >=1.17.0-0`, covering Kubernetes 1.35.
+- Correct the stale `io.giantswarm.application.upstream-chart-version` annotation, which still claimed `2.3.0`.
+- Bundle: bump the pinned image tags in lockstep with the chart, since the bundle forwards them to the app chart under `upstream:` and would otherwise run the new templates against the old driver: `aws-efs-csi-driver` `v2.3.0` -> `v3.5.0`, `livenessprobe` `v2.17.0` -> `v2.19.0`, `csi-node-driver-registrar` `v2.15.0` -> `v2.17.0`, `csi-provisioner` `v6.1.0` -> `v6.3.0`.
 
 ## [3.3.0] - 2026-03-24
 
