@@ -38,24 +38,24 @@ ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
 image:
   registry: gsoci.azurecr.io
   repository: giantswarm/aws-efs-csi-driver
-  tag: "v2.3.0"
+  tag: "v3.5.0"
 
 sidecars:
   livenessProbe:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/livenessprobe
-      tag: "v2.17.0"
+      tag: "v2.19.0"
   nodeDriverRegistrar:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-node-driver-registrar
-      tag: "v2.15.0"
+      tag: "v2.17.0"
   csiProvisioner:
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/csi-provisioner
-      tag: "v6.1.0"
+      tag: "v6.3.0"
 
 controller:
   additionalLabels:
