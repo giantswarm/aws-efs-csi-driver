@@ -20,5 +20,5 @@ annotations:
 dependencies:
   - name: aws-efs-csi-driver
     alias: upstream
-    version: "4.5.0"
+    version: "4.5.1"
     repository: "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
