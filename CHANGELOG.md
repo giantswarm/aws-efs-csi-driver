@@ -7,19 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-**Upgrade notes.** This release moves the driver from `v2.3.x` to `v3.5.0` (upstream chart `3.4.1` -> `4.5.0`). Check the following before upgrading:
 
-- **`crossaccount` is no longer accepted in `mountOptions`.** Driver `v3.x` rejects it with `InvalidArgument` in both `CreateVolume` and `NodePublishVolume`. This affects existing volumes too. A StorageClass copies its `mountOptions` into every PV it provisions, so pods that use those PVs fail at their next mount, for example after a reschedule or a node roll. To find affected resources, run this on each workload cluster:
-
-  ```sh
-  kubectl get pv,sc -o json | jq -r '.items[]
-    | select((.spec.csi.driver // .provisioner) == "efs.csi.aws.com")
-    | select(((.spec.mountOptions // .mountOptions) // []) | index("crossaccount"))
-    | "\(.kind)/\(.metadata.name)"'
-  ```
-
-  To fix them, remove `crossaccount` from `mountOptions` and enable cross-account mounts through the provisioner secret key `crossaccount: "true"` (a `storageClasses[]` entry with `hasSecret: true` already does this) or, for static PVs, through `spec.csi.volumeAttributes.crossaccount: "true"`. Fixing the StorageClass only affects volumes provisioned after the change, so also edit `spec.mountOptions` on the PVs it already provisioned.
-- **`updateStrategy` was replaced by `rollingUpdate`.** `controller.updateStrategy` and `node.updateStrategy` no longer exist. Use `controller.rollingUpdate` and `node.rollingUpdate`, which only accept the `RollingUpdate` parameters (`maxSurge`, `maxUnavailable`), so `OnDelete` can no longer be set for the node DaemonSet. We don't set either key, so the defaults don't change. The values schemas allow unknown keys, so a leftover `updateStrategy` override in the App CR config is ignored without any error. Move it to `rollingUpdate`.
+- **`crossaccount` is no longer accepted in `mountOptions`.** Driver `v3.x` rejects it with `InvalidArgument` in both `CreateVolume` and `NodePublishVolume`. 
+- **`updateStrategy` was replaced by `rollingUpdate`.** `controller.updateStrategy` and `node.updateStrategy` no longer exist. Use `controller.rollingUpdate` and `node.rollingUpdate`, which accept only the `RollingUpdate` parameters (`maxSurge`, `maxUnavailable`), so you can no longer set' OnDelete' for the node DaemonSet. We don't set either key, so the defaults don't change. The values schema allows unknown keys, so a leftover `updateStrategy` override in the App CR config is ignored without error. Move it to `rollingUpdate`.
 
 ### Changed
 
