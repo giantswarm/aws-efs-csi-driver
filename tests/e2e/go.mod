@@ -10,12 +10,12 @@ replace (
 require (
 	github.com/fluxcd/helm-controller/api v1.6.5
 	github.com/giantswarm/apptest-framework/v5 v5.3.2
-	github.com/giantswarm/clustertest/v5 v5.4.0
-	github.com/onsi/ginkgo/v2 v2.31.0
+	github.com/giantswarm/clustertest/v5 v5.6.2
+	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.44.0
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1
-	sigs.k8s.io/controller-runtime v0.24.1
+	sigs.k8s.io/controller-runtime v0.25.1
 )
 
 require (
