@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2026-10-06
 
-
 - **`crossaccount` is no longer accepted in `mountOptions`.** Driver `v3.x` rejects it with `InvalidArgument` in both `CreateVolume` and `NodePublishVolume`. 
 - **`updateStrategy` was replaced by `rollingUpdate`.** `controller.updateStrategy` and `node.updateStrategy` no longer exist. Use `controller.rollingUpdate` and `node.rollingUpdate`, which accept only the `RollingUpdate` parameters (`maxSurge`, `maxUnavailable`), so you can no longer set' OnDelete' for the node DaemonSet. We don't set either key, so the defaults don't change. The values schema allows unknown keys, so a leftover `updateStrategy` override in the App CR config is ignored without error. Move it to `rollingUpdate`.
 
