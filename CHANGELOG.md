@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The `helm.sh/chart` label is valid for long chart versions: the 63-character cut trims the whole trailing run of `-`, `.` and `_`.
+
 ## [4.0.0] - 2026-10-06
 
 - **`crossaccount` is no longer accepted in `mountOptions`.** Driver `v3.x` rejects it with `InvalidArgument` in both `CreateVolume` and `NodePublishVolume`. 
