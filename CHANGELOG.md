@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `helm.sh/chart` label is valid for long chart versions: the 63-character cut trims the whole trailing run of `-`, `.` and `_`.
 
+## [4.0.0] - 2026-10-06
+
 - **`crossaccount` is no longer accepted in `mountOptions`.** Driver `v3.x` rejects it with `InvalidArgument` in both `CreateVolume` and `NodePublishVolume`. 
 - **`updateStrategy` was replaced by `rollingUpdate`.** `controller.updateStrategy` and `node.updateStrategy` no longer exist. Use `controller.rollingUpdate` and `node.rollingUpdate`, which accept only the `RollingUpdate` parameters (`maxSurge`, `maxUnavailable`), so you can no longer set' OnDelete' for the node DaemonSet. We don't set either key, so the defaults don't change. The values schema allows unknown keys, so a leftover `updateStrategy` override in the App CR config is ignored without error. Move it to `rollingUpdate`.
 
@@ -313,7 +315,8 @@ You can verify this by describing `kiam-agent` DaemonSet and checking if `--allo
 
 ## [0.0.1] - 2021-01-27
 
-[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/aws-efs-csi-driver/compare/v3.0.0...v3.1.0
