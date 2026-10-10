@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "aws-efs-csi-driver-bundle.labels" $ | nindent 4 }}
+    # helm-controller reconciles the HelmRelease at once when a watched values ConfigMap changes.
+    reconcile.fluxcd.io/watch: Enabled
 data:
   values: |
   {{- (include "giantswarm.workloadValues" .) | nindent 4 }}
