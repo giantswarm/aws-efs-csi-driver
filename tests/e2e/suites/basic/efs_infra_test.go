@@ -317,37 +317,42 @@ func (e *efsInfra) Create(ctx context.Context, c client.Client) {
 }
 
 // Cleanup deletes all Crossplane resources in reverse creation order and
-// waits for them to be fully removed.
+// waits for them to be fully removed. Every poll re-issues the delete of a
+// resource that has none pending yet, so a transient API error cannot leave
+// one behind. Crossplane deletes the AWS resources (deletionPolicy Delete)
+// and keeps retrying the ones AWS refuses while something still uses them:
+// the FileSystem until its MountTargets are gone, the SecurityGroup until
+// their network interfaces are. The run fails, naming what is left, when a
+// resource outlives the timeout.
 func (e *efsInfra) Cleanup(ctx context.Context, c client.Client) {
-	By("Deleting Crossplane EFS resources")
-	for i := len(e.created) - 1; i >= 0; i-- {
-		ref := e.created[i]
-		obj := &unstructured.Unstructured{}
-		obj.SetGroupVersionKind(ref.gvk)
-		obj.SetName(ref.name)
-		err := c.Delete(ctx, obj)
-		if err != nil && !apierrors.IsNotFound(err) {
-			GinkgoLogr.Error(err, "failed to delete", "kind", ref.gvk.Kind, "name", ref.name)
-		} else {
-			GinkgoLogr.Info("deleting resource", "kind", ref.gvk.Kind, "name", ref.name)
-		}
-	}
-
-	By("Waiting for Crossplane resources to be removed")
-	for _, ref := range e.created {
-		By(fmt.Sprintf("Waiting for %s/%s to be deleted", ref.gvk.Kind, ref.name))
-		Eventually(func() bool {
+	By("Deleting Crossplane EFS resources and waiting for them to be removed")
+	Eventually(func() []string {
+		var remaining []string
+		for i := len(e.created) - 1; i >= 0; i-- {
+			ref := e.created[i]
 			obj := &unstructured.Unstructured{}
 			obj.SetGroupVersionKind(ref.gvk)
 			err := c.Get(ctx, types.NamespacedName{Name: ref.name}, obj)
 			if apierrors.IsNotFound(err) {
-				GinkgoLogr.Info("resource deleted", "kind", ref.gvk.Kind, "name", ref.name)
-				return true
+				continue
+			}
+			remaining = append(remaining, ref.gvk.Kind+"/"+ref.name)
+			if err != nil {
+				GinkgoLogr.Error(err, "cannot fetch resource", "kind", ref.gvk.Kind, "name", ref.name)
+				continue
+			}
+			if obj.GetDeletionTimestamp() == nil {
+				if err := client.IgnoreNotFound(c.Delete(ctx, obj)); err != nil {
+					GinkgoLogr.Error(err, "failed to delete", "kind", ref.gvk.Kind, "name", ref.name)
+				} else {
+					GinkgoLogr.Info("deleting resource", "kind", ref.gvk.Kind, "name", ref.name)
+				}
+				continue
 			}
 			logResourceStatus(ctx, c, ref.gvk, ref.name)
-			return false
-		}).WithTimeout(10 * time.Minute).WithPolling(10 * time.Second).Should(BeTrue())
-	}
+		}
+		return remaining
+	}).WithTimeout(15*time.Minute).WithPolling(10*time.Second).Should(BeEmpty(), "Crossplane EFS resources of this run still exist")
 }
 
 func (e *efsInfra) track(gvk schema.GroupVersionKind, name string) {
