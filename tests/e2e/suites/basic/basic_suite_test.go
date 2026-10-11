@@ -232,6 +232,16 @@ func TestBasic(t *testing.T) {
 		AfterSuite(func() {
 			ctx := state.GetContext()
 
+			// Deferred so that it runs whatever happens in the WC cleanup below: a
+			// failed wait there must not skip it. The framework deletes the workload
+			// cluster, and with it the subnets of the MountTargets, right after this
+			// hook, and a FileSystem left behind is billed until someone finds it.
+			defer func() {
+				if efs != nil {
+					efs.Cleanup(ctx, *state.GetFramework().MC())
+				}
+			}()
+
 			// Clean up WC resources while the CSI driver is still running,
 			// so that PVC deletion triggers access point removal.
 			wcClient, err := state.GetFramework().WC(state.GetCluster().Name)
