@@ -4,5 +4,4 @@ catalog-base-url: https://giantswarm.github.io/giantswarm-catalog/
 ct-config: ./.circleci/ct-config.yaml
 # app-build-suite's helm template validator renders each chart as release abs-validation, from
 # which the bundle cannot derive its clusterID; the workload chart ignores the key.
-helm-template-extra-values:
-  - helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml
+helm-template-extra-values: helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml
