@@ -63,7 +63,12 @@ giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quot
 {{- end -}}
 
 {{/*
-Fetch crossplane config ConfigMap data
+Fetch crossplane config ConfigMap data.
+Without a cluster (`helm template`, `helm lint`) `lookup` returns nothing and
+the Crossplane IAM API is not among the capabilities: the data is a
+placeholder (account 000000000000, OIDC domain oidc.offline.invalid) so the
+chart renders for review. On a cluster that serves the IAM API a missing
+ConfigMap fails the render.
 */}}
 {{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
 {{- $clusterName := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
@@ -71,6 +76,8 @@ Fetch crossplane config ConfigMap data
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
   {{- $cmvalues = fromYaml $configmap.data.values -}}
+{{- else if not (.Capabilities.APIVersions.Has "iam.aws.upbound.io/v1beta1/Role") -}}
+  {{- $cmvalues = dict "awsPartition" "aws" "accountID" "000000000000" "oidcDomains" (list "oidc.offline.invalid") -}}
 {{- else -}}
   {{- fail (printf "Crossplane config ConfigMap %s-crossplane-config not found in namespace %s or has no data" $clusterName .Release.Namespace) -}}
 {{- end -}}
