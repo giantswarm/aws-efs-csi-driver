@@ -62,6 +62,10 @@ application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantsw
 giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quote }}
 {{- end -}}
 
+{{- define "aws-efs-csi-driver-bundle.iamAPIVersion" -}}
+iam.aws.upbound.io/v1beta1
+{{- end -}}
+
 {{/*
 Fetch crossplane config ConfigMap data.
 Without the Crossplane IAM API (offline render) the data is a placeholder;
@@ -73,7 +77,7 @@ where the API is served, a missing ConfigMap fails the render.
 {{- $cmvalues := dict -}}
 {{- if and $configmap $configmap.data $configmap.data.values -}}
   {{- $cmvalues = fromYaml $configmap.data.values -}}
-{{- else if not (.Capabilities.APIVersions.Has "iam.aws.upbound.io/v1beta1/Role") -}}
+{{- else if not (.Capabilities.APIVersions.Has (printf "%s/Role" (include "aws-efs-csi-driver-bundle.iamAPIVersion" .))) -}}
   {{- $cmvalues = dict "awsPartition" "aws" "accountID" "000000000000" "oidcDomains" (list "oidc.offline.invalid") -}}
 {{- else -}}
   {{- fail (printf "Crossplane config ConfigMap %s-crossplane-config not found in namespace %s or has no data" $clusterName .Release.Namespace) -}}
