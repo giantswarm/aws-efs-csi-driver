@@ -103,7 +103,7 @@ The bundle chart's `_helpers.tpl` contains a `giantswarm.workloadValues` helper 
 
 1. **Image transformation** -- The bundle stores images in GS split format (`registry` + `repository`). The helper combines them into a single `repository` field that the upstream chart expects (e.g. `gsoci.azurecr.io` + `giantswarm/aws-efs-csi-driver` becomes `gsoci.azurecr.io/giantswarm/aws-efs-csi-driver`).
 
-2. **IRSA annotation** -- The helper looks up the cluster's `crossplane-config` ConfigMap to compute the IAM role ARN and injects it into `controller.serviceAccount.annotations`. Rendered without a cluster (`helm template`, `helm lint`), the lookup is empty and the Crossplane IAM API absent, so the chart renders with placeholder data (account `000000000000`, OIDC domain `oidc.offline.invalid`); on a cluster that serves the IAM API a missing ConfigMap still fails the render.
+2. **IRSA annotation** -- The helper looks up the cluster's `crossplane-config` ConfigMap to compute the IAM role ARN and injects it into `controller.serviceAccount.annotations`. Offline renders (`helm template`, `helm lint`) use placeholder data (account `000000000000`, OIDC domain `oidc.offline.invalid`).
 
 3. **Upstream vs. extras routing** -- Values are split into two groups:
    - **Upstream values** (`image`, `sidecars`, `controller`, `node`, `storageClasses`, and any non-reserved key) are nested under `upstream:` so Helm routes them to the subchart.

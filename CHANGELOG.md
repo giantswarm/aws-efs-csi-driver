@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Bundle: `helm template` and `helm lint` render the chart without a cluster. With no `<clusterID>-crossplane-config` ConfigMap and no Crossplane IAM API (`iam.aws.upbound.io/v1beta1`) available, the IAM Role and the IRSA annotation use placeholder data (account `000000000000`, OIDC domain `oidc.offline.invalid`). On a cluster that serves the IAM API, rendering is unchanged, and a missing ConfigMap still fails the render.
+- Bundle: `helm template` and `helm lint` render without a cluster, using placeholder IAM data (account `000000000000`, OIDC domain `oidc.offline.invalid`) when the Crossplane IAM API is not available. Installs on a management cluster are unchanged.
 
 ## [4.0.1] - 2026-10-10
 

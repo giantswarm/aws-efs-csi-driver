@@ -64,11 +64,8 @@ giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quot
 
 {{/*
 Fetch crossplane config ConfigMap data.
-Without a cluster (`helm template`, `helm lint`) `lookup` returns nothing and
-the Crossplane IAM API is not among the capabilities: the data is a
-placeholder (account 000000000000, OIDC domain oidc.offline.invalid) so the
-chart renders for review. On a cluster that serves the IAM API a missing
-ConfigMap fails the render.
+Without the Crossplane IAM API (offline render) the data is a placeholder;
+where the API is served, a missing ConfigMap fails the render.
 */}}
 {{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
 {{- $clusterName := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
