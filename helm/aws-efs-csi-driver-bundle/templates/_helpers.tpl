@@ -63,7 +63,7 @@ giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quot
 {{- end -}}
 
 {{/*
-AWS context for the IRSA role. Values win; anything unset falls back to the
+AWS context for the IRSA role. Values win; anything unset is read from the
 <clusterID>-crossplane-config ConfigMap in the release namespace, and a field
 that resolves to nothing fails the render.
 Returns YAML: include "aws-efs-csi-driver-bundle.aws" $ | fromYaml
@@ -74,25 +74,25 @@ Returns YAML: include "aws-efs-csi-driver-bundle.aws" $ | fromYaml
 {{- $fallback := dict -}}
 {{- if not (and $values.accountID $values.partition $values.oidcDomain) -}}
 {{- $configMap := lookup "v1" "ConfigMap" .Release.Namespace $configMapName -}}
-{{- if and $configMap $configMap.data $configMap.data.values -}}
-{{- $fallback = fromYaml $configMap.data.values -}}
+{{- if not (and $configMap $configMap.data $configMap.data.values) -}}
+{{- fail (printf "ConfigMap %s/%s not found or has no values: set aws.accountID, aws.partition and aws.oidcDomain" .Release.Namespace $configMapName) -}}
 {{- end -}}
+{{- $fallback = fromYaml $configMap.data.values -}}
 {{- end -}}
 {{- $accountID := $values.accountID | default $fallback.accountID | default "" | toString -}}
 {{- if not $accountID -}}
-{{- fail (printf "aws.accountID is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- fail (printf "aws.accountID is not set and ConfigMap %s/%s has no accountID" .Release.Namespace $configMapName) -}}
 {{- end -}}
 {{- $partition := $values.partition | default $fallback.awsPartition | default "" | toString -}}
 {{- if not $partition -}}
-{{- fail (printf "aws.partition is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- fail (printf "aws.partition is not set and ConfigMap %s/%s has no awsPartition" .Release.Namespace $configMapName) -}}
 {{- end -}}
-{{- $oidcDomains := $fallback.oidcDomains | default list -}}
+{{- $oidcDomains := $fallback.oidcDomains | default list | compact | uniq -}}
 {{- if $values.oidcDomain -}}
 {{- $oidcDomains = list $values.oidcDomain -}}
 {{- end -}}
-{{- $oidcDomains = concat $oidcDomains ($values.additionalOIDCDomains | default list) | compact | uniq -}}
 {{- if not $oidcDomains -}}
-{{- fail (printf "aws.oidcDomain is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- fail (printf "aws.oidcDomain is not set and ConfigMap %s/%s has no oidcDomains" .Release.Namespace $configMapName) -}}
 {{- end -}}
 {{- dict "accountID" $accountID "partition" $partition "oidcDomains" $oidcDomains | toYaml -}}
 {{- end -}}

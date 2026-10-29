@@ -1,0 +1,111 @@
+suite: IRSA AWS context
+templates:
+  - templates/iam.yaml
+  - templates/configmap.yaml
+release:
+  name: c1-aws-efs-csi-driver-bundle
+  namespace: org-full
+kubernetesProvider:
+  scheme:
+    "v1/ConfigMap":
+      gvr:
+        version: "v1"
+        resource: "configmaps"
+      namespaced: true
+  objects:
+    - kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: c1-crossplane-config
+        namespace: org-full
+      data:
+        values: |
+          accountID: "111122223333"
+          awsPartition: aws-cn
+          oidcDomains:
+            - irsa.c1.example.com
+            - irsa.c1-legacy.example.com
+    - kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: c1-crossplane-config
+        namespace: org-partial
+      data:
+        values: |
+          accountID: "111122223333"
+          awsPartition: aws-cn
+tests:
+  - it: reads every field from the crossplane-config ConfigMap when no aws values are set
+    template: templates/iam.yaml
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.c1\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.c1-legacy\.example\.com"'
+
+  - it: builds the role ARN from the ConfigMap
+    template: templates/configmap.yaml
+    asserts:
+      - matchRegex:
+          path: data.values
+          pattern: 'eks\.amazonaws\.com/role-arn: arn:aws-cn:iam::111122223333:role/c1-aws-efs-csi-driver-role'
+
+  - it: prefers aws values over the ConfigMap
+    template: templates/iam.yaml
+    set:
+      aws:
+        accountID: "444455556666"
+        partition: aws-us-gov
+        oidcDomain: irsa.override.example.com
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-us-gov:iam::444455556666:oidc-provider/irsa\.override\.example\.com"'
+      - notMatchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: 'irsa\.c1'
+
+  - it: mixes a single aws value with the ConfigMap for the rest
+    template: templates/iam.yaml
+    set:
+      aws:
+        partition: aws
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws:iam::111122223333:oidc-provider/irsa\.c1\.example\.com"'
+
+  - it: renders without the ConfigMap when every aws value is set
+    template: templates/configmap.yaml
+    release:
+      namespace: org-empty
+    set:
+      aws:
+        accountID: "444455556666"
+        partition: aws
+        oidcDomain: irsa.override.example.com
+    asserts:
+      - matchRegex:
+          path: data.values
+          pattern: 'eks\.amazonaws\.com/role-arn: arn:aws:iam::444455556666:role/c1-aws-efs-csi-driver-role'
+
+  - it: fails when the ConfigMap is missing and aws values are incomplete
+    template: templates/iam.yaml
+    release:
+      namespace: org-empty
+    set:
+      aws:
+        accountID: "444455556666"
+    asserts:
+      - failedTemplate:
+          errorMessage: "ConfigMap org-empty/c1-crossplane-config not found or has no values: set aws.accountID, aws.partition and aws.oidcDomain"
+
+  - it: fails naming the field the ConfigMap lacks
+    template: templates/iam.yaml
+    release:
+      namespace: org-partial
+    asserts:
+      - failedTemplate:
+          errorMessage: "aws.oidcDomain is not set and ConfigMap org-partial/c1-crossplane-config has no oidcDomains"

@@ -37,8 +37,6 @@ aws:
   partition: ""
   # IRSA OIDC provider host, used verbatim. Replaces the ConfigMap's domains.
   oidcDomain: ""
-  # Further OIDC provider hosts trusted alongside the primary ones.
-  additionalOIDCDomains: []
 
 # ─── UPSTREAM ────────────────────────────────────────────────────────────────
 # These values are nested under `upstream:` in the workload chart ConfigMap.
