@@ -29,9 +29,6 @@ spec:
   kubeConfig:
     secretRef:
       name: {{ include "aws-efs-csi-driver-bundle.clusterID" . }}-kubeconfig
-  dependsOn:
-    - name: {{ include "aws-efs-csi-driver-bundle.clusterID" . }}-cloud-provider-aws
-      namespace: {{ .Release.Namespace }}
   chartRef:
     kind: OCIRepository
     name: {{ include "aws-efs-csi-driver-bundle.clusterID" . }}-aws-efs-csi-driver
