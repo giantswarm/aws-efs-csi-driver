@@ -27,7 +27,7 @@ Giant Swarm managed app for AWS EFS CSI Driver. This uses the unmodified upstrea
 The bundle's `giantswarm.workloadValues` helper transforms flat bundle values into the nested structure the workload chart expects:
 - Image `registry` + `repository` → single `repository` path for upstream chart
 - GS labels injected into `upstream.controller.additionalLabels/podLabels` and `upstream.node.additionalLabels/podLabels`
-- IRSA annotation computed from crossplane-config ConfigMap
+- IRSA annotation computed from `aws.*` values, falling back to the crossplane-config ConfigMap
 
 Important values:
 - `clusterID` - Required (bundle). Used for IRSA role naming and resource prefixes

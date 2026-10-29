@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Bundle: `aws.accountID`, `aws.partition` and `aws.oidcDomain` set the IRSA role's AWS context explicitly. Unset fields are still read from the `<clusterID>-crossplane-config` ConfigMap, and a field that resolves to nothing fails the render.
+
 ## [4.0.1] - 2026-10-10
 
 ### Fixed
