@@ -2,6 +2,7 @@ chart-dir: helm/aws-efs-csi-driver
 generate-metadata: true
 catalog-base-url: https://giantswarm.github.io/giantswarm-catalog/
 ct-config: ./.circleci/ct-config.yaml
-# app-build-suite's helm template validator renders each chart as release abs-validation, from
-# which the bundle cannot derive its clusterID; the workload chart ignores the key.
+# app-build-suite's helm template validator renders each chart as release abs-validation, with no
+# cluster: the bundle can neither derive its clusterID nor read its crossplane-config ConfigMap,
+# so the ci values supply both. The workload chart ignores these keys.
 helm-template-extra-values: helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml

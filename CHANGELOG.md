@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- Bundle: `helm template` and `helm lint` render without a cluster, using placeholder IAM data (account `000000000000`, OIDC domain `oidc.offline.invalid`) when the Crossplane IAM API is not available. Installs on a management cluster are unchanged.
+- Bundle: `aws.accountID`, `aws.partition`, `aws.oidcDomain` and `aws.additionalOIDCDomains` set the IRSA role's AWS context explicitly. Unset fields are still read from the `<clusterID>-crossplane-config` ConfigMap, and a field that resolves to nothing fails the render.
 
 ## [4.0.1] - 2026-10-10
 

@@ -62,39 +62,51 @@ application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantsw
 giantswarm.io/cluster: {{ include "aws-efs-csi-driver-bundle.clusterID" . | quote }}
 {{- end -}}
 
-{{- define "aws-efs-csi-driver-bundle.iamAPIVersion" -}}
-iam.aws.upbound.io/v1beta1
-{{- end -}}
-
 {{/*
-Fetch crossplane config ConfigMap data.
-Without the Crossplane IAM API (offline render) the data is a placeholder;
-where the API is served, a missing ConfigMap fails the render.
+AWS context for the IRSA role. Values win; anything unset falls back to the
+<clusterID>-crossplane-config ConfigMap in the release namespace, and a field
+that resolves to nothing fails the render.
+Returns YAML: include "aws-efs-csi-driver-bundle.aws" $ | fromYaml
 */}}
-{{- define "aws-efs-csi-driver-bundle.crossplaneConfigData" -}}
-{{- $clusterName := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
-{{- $configmap := (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-crossplane-config" $clusterName)) -}}
-{{- $cmvalues := dict -}}
-{{- if and $configmap $configmap.data $configmap.data.values -}}
-  {{- $cmvalues = fromYaml $configmap.data.values -}}
-{{- else if not (.Capabilities.APIVersions.Has (printf "%s/Role" (include "aws-efs-csi-driver-bundle.iamAPIVersion" .))) -}}
-  {{- $cmvalues = dict "awsPartition" "aws" "accountID" "000000000000" "oidcDomains" (list "oidc.offline.invalid") -}}
-{{- else -}}
-  {{- fail (printf "Crossplane config ConfigMap %s-crossplane-config not found in namespace %s or has no data" $clusterName .Release.Namespace) -}}
+{{- define "aws-efs-csi-driver-bundle.aws" -}}
+{{- $values := .Values.aws | default dict -}}
+{{- $configMapName := printf "%s-crossplane-config" (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
+{{- $fallback := dict -}}
+{{- if not (and $values.accountID $values.partition $values.oidcDomain) -}}
+{{- $configMap := lookup "v1" "ConfigMap" .Release.Namespace $configMapName -}}
+{{- if and $configMap $configMap.data $configMap.data.values -}}
+{{- $fallback = fromYaml $configMap.data.values -}}
 {{- end -}}
-{{- $cmvalues | toYaml -}}
+{{- end -}}
+{{- $accountID := $values.accountID | default $fallback.accountID | default "" | toString -}}
+{{- if not $accountID -}}
+{{- fail (printf "aws.accountID is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- end -}}
+{{- $partition := $values.partition | default $fallback.awsPartition | default "" | toString -}}
+{{- if not $partition -}}
+{{- fail (printf "aws.partition is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- end -}}
+{{- $oidcDomains := $fallback.oidcDomains | default list -}}
+{{- if $values.oidcDomain -}}
+{{- $oidcDomains = list $values.oidcDomain -}}
+{{- end -}}
+{{- $oidcDomains = concat $oidcDomains ($values.additionalOIDCDomains | default list) | compact | uniq -}}
+{{- if not $oidcDomains -}}
+{{- fail (printf "aws.oidcDomain is not set and could not be read from ConfigMap %s in namespace %s" $configMapName .Release.Namespace) -}}
+{{- end -}}
+{{- dict "accountID" $accountID "partition" $partition "oidcDomains" $oidcDomains | toYaml -}}
 {{- end -}}
 
 {{/*
 Get trust policy statements for all provided OIDC domains
 */}}
 {{- define "aws-efs-csi-driver-bundle.trustPolicyStatements" -}}
-{{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
-{{- range $index, $oidcDomain := $cmvalues.oidcDomains -}}
+{{- $aws := include "aws-efs-csi-driver-bundle.aws" . | fromYaml -}}
+{{- range $index, $oidcDomain := $aws.oidcDomains -}}
 {{- if not (eq $index 0) }}, {{ end }}{
   "Effect": "Allow",
   "Principal": {
-    "Federated": "arn:{{ $cmvalues.awsPartition }}:iam::{{ $cmvalues.accountID }}:oidc-provider/{{ $oidcDomain }}"
+    "Federated": "arn:{{ $aws.partition }}:iam::{{ $aws.accountID }}:oidc-provider/{{ $oidcDomain }}"
   },
   "Action": "sts:AssumeRoleWithWebIdentity",
   "Condition": {
@@ -110,9 +122,9 @@ Get trust policy statements for all provided OIDC domains
 Set Giant Swarm specific values — computes IRSA role ARN.
 */}}
 {{- define "giantswarm.setValues" -}}
-{{- $cmvalues := (include "aws-efs-csi-driver-bundle.crossplaneConfigData" .) | fromYaml -}}
+{{- $aws := include "aws-efs-csi-driver-bundle.aws" . | fromYaml -}}
 {{- $clusterID := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
-{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $cmvalues.awsPartition $cmvalues.accountID $clusterID) -}}
+{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $aws.partition $aws.accountID $clusterID) -}}
 {{- if and (not .Values.clusterName) -}}
 {{- $_ := set .Values "clusterName" $clusterID -}}
 {{- end -}}
@@ -146,7 +158,7 @@ Any other key in .Values passes through to upstream automatically.
 {{- $upstreamValues := dict -}}
 
 {{/* Keys that belong to the bundle chart itself (never forwarded) */}}
-{{- $bundleOnlyKeys := list "ociRepositoryUrl" "clusterID" "clusterName" -}}
+{{- $bundleOnlyKeys := list "ociRepositoryUrl" "clusterID" "clusterName" "aws" -}}
 {{/* Keys forwarded as workload extras (not under upstream:) */}}
 {{- $extrasKeys := list "networkPolicy" "verticalPodAutoscaler" "global" -}}
 {{/* Keys with special handling */}}
