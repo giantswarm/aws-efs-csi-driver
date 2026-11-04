@@ -28,6 +28,16 @@ ociRepositoryUrl: oci://gsoci.azurecr.io/charts/giantswarm/aws-efs-csi-driver
 # It drives IRSA role naming and Flux resource prefixes.
 # clusterID: ""
 
+# AWS context for the IRSA role's trust policy and the controller's role ARN.
+# All values are optional overrides. When left empty they are read from the
+# <clusterID>-crossplane-config ConfigMap in the release namespace.
+aws:
+  accountID: ""
+  # e.g. aws, aws-cn, aws-us-gov.
+  partition: ""
+  # IRSA OIDC provider host, used verbatim. Replaces the ConfigMap's domains.
+  oidcDomain: ""
+
 # ─── UPSTREAM ────────────────────────────────────────────────────────────────
 # These values are nested under `upstream:` in the workload chart ConfigMap.
 # They configure the unmodified upstream aws-efs-csi-driver subchart.

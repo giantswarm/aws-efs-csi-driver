@@ -103,13 +103,13 @@ The bundle chart's `_helpers.tpl` contains a `giantswarm.workloadValues` helper 
 
 1. **Image transformation** -- The bundle stores images in GS split format (`registry` + `repository`). The helper combines them into a single `repository` field that the upstream chart expects (e.g. `gsoci.azurecr.io` + `giantswarm/aws-efs-csi-driver` becomes `gsoci.azurecr.io/giantswarm/aws-efs-csi-driver`).
 
-2. **IRSA annotation** -- The helper looks up the cluster's `crossplane-config` ConfigMap to compute the IAM role ARN and injects it into `controller.serviceAccount.annotations`.
+2. **IRSA annotation** -- The helper computes the IAM role ARN and injects it into `controller.serviceAccount.annotations`. The AWS account ID, partition and OIDC domains come from `aws.*` values, and any left unset are read from the cluster's `<clusterID>-crossplane-config` ConfigMap. Offline renders (`helm template`, `helm lint`) have no ConfigMap to read, so they need the `aws.*` values set, as in `helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml`.
 
 3. **Upstream vs. extras routing** -- Values are split into two groups:
    - **Upstream values** (`image`, `sidecars`, `controller`, `node`, `storageClasses`, and any non-reserved key) are nested under `upstream:` so Helm routes them to the subchart.
    - **Extras values** (`networkPolicy`, `verticalPodAutoscaler`, `global`) stay at the top level for the GS extras templates.
 
-4. **Bundle-only keys** (`clusterID`, `ociRepositoryUrl`, name overrides) are excluded from the workload chart entirely.
+4. **Bundle-only keys** (`clusterID`, `aws`, `ociRepositoryUrl`, name overrides) are excluded from the workload chart entirely.
 
 The resulting structure is written to a ConfigMap, which Flux's HelmRelease reads via `valuesFrom`. At deploy time, Helm deep-merges these values with the workload chart's own `values.yaml` defaults.
 
