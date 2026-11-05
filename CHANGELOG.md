@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- CI: architect orb 10.16.7, which pushes the chart to the git app catalogs with the architect GitHub App instead of the `catalogbot` account (giantswarm/giantswarm#34786).
 - Update OCIRepository version to v1.
 - Update upstream `aws-efs-csi-driver` chart to `4.5.0` (was `3.4.1`), which moves the driver image from `v2.3.1` to `v3.5.0` and refreshes the `csi-node-driver-registrar` and `livenessprobe` sidecars. Upstream chart declares `kubeVersion: >=1.17.0-0`, covering Kubernetes 1.35.
 - Correct the stale `io.giantswarm.application.upstream-chart-version` annotation, which still claimed `2.3.0`.
