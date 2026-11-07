@@ -68,8 +68,6 @@ controller:
     requests:
       cpu: 100m
       memory: 128Mi
-  nodeSelector:
-    node-role.kubernetes.io/control-plane: ""
   tolerations:
     - key: CriticalAddonsOnly
       operator: Exists
@@ -78,6 +76,14 @@ controller:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
   affinity:
+    # Prefer, not require, control-plane nodes since EKS has none
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 100
@@ -108,7 +114,6 @@ node:
           - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: DoesNotExist
-          - matchExpressions:
               - key: eks.amazonaws.com/compute-type
                 operator: NotIn
                 values:
