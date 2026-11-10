@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bundle: remove the `dependsOn` on the `<cluster>-cloud-provider-aws` HelmRelease, which does not exist on EKS and blocked the installation there.
+- Bundle: prefer control-plane nodes for the controller instead of requiring them, so the controller also schedules on EKS.
+- Bundle: exclude Fargate and hybrid nodes from the node DaemonSet. The node affinity used to match any node without the control-plane role.
+
 ## [4.0.1] - 2026-10-10
 
 ### Fixed
