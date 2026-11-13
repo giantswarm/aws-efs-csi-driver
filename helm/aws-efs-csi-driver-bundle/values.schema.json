@@ -13,11 +13,15 @@
                 "accountID": {
                     "type": "string"
                 },
-                "partition": {
+                "awsPartition": {
                     "type": "string"
                 },
-                "oidcDomain": {
-                    "type": "string"
+                "oidcDomains": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
                 }
             }
         }

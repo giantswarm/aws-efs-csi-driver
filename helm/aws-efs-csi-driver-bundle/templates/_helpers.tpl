@@ -72,10 +72,10 @@ Returns YAML: include "aws-efs-csi-driver-bundle.aws" $ | fromYaml
 {{- $values := .Values.aws | default dict -}}
 {{- $configMapName := printf "%s-crossplane-config" (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
 {{- $fallback := dict -}}
-{{- if not (and $values.accountID $values.partition $values.oidcDomain) -}}
+{{- if not (and $values.accountID $values.awsPartition $values.oidcDomains) -}}
 {{- $configMap := lookup "v1" "ConfigMap" .Release.Namespace $configMapName -}}
 {{- if not (and $configMap $configMap.data $configMap.data.values) -}}
-{{- fail (printf "ConfigMap %s/%s not found or has no values: set aws.accountID, aws.partition and aws.oidcDomain" .Release.Namespace $configMapName) -}}
+{{- fail (printf "ConfigMap %s/%s not found or has no values: set aws.accountID, aws.awsPartition and aws.oidcDomains" .Release.Namespace $configMapName) -}}
 {{- end -}}
 {{- $fallback = fromYaml $configMap.data.values -}}
 {{- end -}}
@@ -83,18 +83,15 @@ Returns YAML: include "aws-efs-csi-driver-bundle.aws" $ | fromYaml
 {{- if not $accountID -}}
 {{- fail (printf "aws.accountID is not set and ConfigMap %s/%s has no accountID" .Release.Namespace $configMapName) -}}
 {{- end -}}
-{{- $partition := $values.partition | default $fallback.awsPartition | default "" | toString -}}
-{{- if not $partition -}}
-{{- fail (printf "aws.partition is not set and ConfigMap %s/%s has no awsPartition" .Release.Namespace $configMapName) -}}
+{{- $awsPartition := $values.awsPartition | default $fallback.awsPartition | default "" | toString -}}
+{{- if not $awsPartition -}}
+{{- fail (printf "aws.awsPartition is not set and ConfigMap %s/%s has no awsPartition" .Release.Namespace $configMapName) -}}
 {{- end -}}
-{{- $oidcDomains := $fallback.oidcDomains | default list | compact | uniq -}}
-{{- if $values.oidcDomain -}}
-{{- $oidcDomains = list $values.oidcDomain -}}
-{{- end -}}
+{{- $oidcDomains := $values.oidcDomains | default $fallback.oidcDomains | default list | compact | uniq -}}
 {{- if not $oidcDomains -}}
-{{- fail (printf "aws.oidcDomain is not set and ConfigMap %s/%s has no oidcDomains" .Release.Namespace $configMapName) -}}
+{{- fail (printf "aws.oidcDomains is not set and ConfigMap %s/%s has no oidcDomains" .Release.Namespace $configMapName) -}}
 {{- end -}}
-{{- dict "accountID" $accountID "partition" $partition "oidcDomains" $oidcDomains | toYaml -}}
+{{- dict "accountID" $accountID "awsPartition" $awsPartition "oidcDomains" $oidcDomains | toYaml -}}
 {{- end -}}
 
 {{/*
@@ -106,7 +103,7 @@ Get trust policy statements for all provided OIDC domains
 {{- if not (eq $index 0) }}, {{ end }}{
   "Effect": "Allow",
   "Principal": {
-    "Federated": "arn:{{ $aws.partition }}:iam::{{ $aws.accountID }}:oidc-provider/{{ $oidcDomain }}"
+    "Federated": "arn:{{ $aws.awsPartition }}:iam::{{ $aws.accountID }}:oidc-provider/{{ $oidcDomain }}"
   },
   "Action": "sts:AssumeRoleWithWebIdentity",
   "Condition": {
@@ -124,7 +121,7 @@ Set Giant Swarm specific values — computes IRSA role ARN.
 {{- define "giantswarm.setValues" -}}
 {{- $aws := include "aws-efs-csi-driver-bundle.aws" . | fromYaml -}}
 {{- $clusterID := (include "aws-efs-csi-driver-bundle.clusterID" .) -}}
-{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $aws.partition $aws.accountID $clusterID) -}}
+{{- $_ := set .Values.controller.serviceAccount.annotations "eks.amazonaws.com/role-arn" (printf "arn:%s:iam::%s:role/%s-aws-efs-csi-driver-role" $aws.awsPartition $aws.accountID $clusterID) -}}
 {{- if and (not .Values.clusterName) -}}
 {{- $_ := set .Values "clusterName" $clusterID -}}
 {{- end -}}

@@ -57,12 +57,20 @@ tests:
     set:
       aws:
         accountID: "444455556666"
-        partition: aws-us-gov
-        oidcDomain: irsa.override.example.com
+        awsPartition: aws-us-gov
+        oidcDomains:
+        - irsa.override.example.com
+        - irsa.second.example.com
     asserts:
       - matchRegex:
           path: spec.forProvider.assumeRolePolicy
           pattern: '"Federated": "arn:aws-us-gov:iam::444455556666:oidc-provider/irsa\.override\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-us-gov:iam::444455556666:oidc-provider/irsa\.second\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"irsa\.second\.example\.com:sub": "system:serviceaccount:kube-system:efs-csi-sa"'
       - notMatchRegex:
           path: spec.forProvider.assumeRolePolicy
           pattern: 'irsa\.c1'
@@ -71,11 +79,42 @@ tests:
     template: templates/iam.yaml
     set:
       aws:
-        partition: aws
+        awsPartition: aws
     asserts:
       - matchRegex:
           path: spec.forProvider.assumeRolePolicy
           pattern: '"Federated": "arn:aws:iam::111122223333:oidc-provider/irsa\.c1\.example\.com"'
+
+  - it: overrides all OIDC domains while reading the account and partition from the ConfigMap
+    template: templates/iam.yaml
+    set:
+      aws:
+        oidcDomains:
+        - irsa.override.example.com
+        - irsa.second.example.com
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.override\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.second\.example\.com"'
+      - notMatchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: 'irsa\.c1'
+
+  - it: reads all ConfigMap domains when the override list is empty
+    template: templates/iam.yaml
+    set:
+      aws:
+        oidcDomains: []
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.c1\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-cn:iam::111122223333:oidc-provider/irsa\.c1-legacy\.example\.com"'
 
   - it: renders without the ConfigMap when every aws value is set
     template: templates/configmap.yaml
@@ -84,8 +123,10 @@ tests:
     set:
       aws:
         accountID: "444455556666"
-        partition: aws
-        oidcDomain: irsa.override.example.com
+        awsPartition: aws
+        oidcDomains:
+        - irsa.override.example.com
+        - irsa.second.example.com
     asserts:
       - matchRegex:
           path: data.values
@@ -100,7 +141,7 @@ tests:
         accountID: "444455556666"
     asserts:
       - failedTemplate:
-          errorMessage: "ConfigMap org-empty/c1-crossplane-config not found or has no values: set aws.accountID, aws.partition and aws.oidcDomain"
+          errorMessage: "ConfigMap org-empty/c1-crossplane-config not found or has no values: set aws.accountID, aws.awsPartition and aws.oidcDomains"
 
   - it: fails naming the field the ConfigMap lacks
     template: templates/iam.yaml
@@ -108,4 +149,23 @@ tests:
       namespace: org-partial
     asserts:
       - failedTemplate:
-          errorMessage: "aws.oidcDomain is not set and ConfigMap org-partial/c1-crossplane-config has no oidcDomains"
+          errorMessage: "aws.oidcDomains is not set and ConfigMap org-partial/c1-crossplane-config has no oidcDomains"
+
+  - it: renders every OIDC provider without a ConfigMap
+    template: templates/iam.yaml
+    release:
+      namespace: org-empty
+    set:
+      aws:
+        accountID: "444455556666"
+        awsPartition: aws-us-gov
+        oidcDomains:
+        - irsa.override.example.com
+        - irsa.second.example.com
+    asserts:
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-us-gov:iam::444455556666:oidc-provider/irsa\.override\.example\.com"'
+      - matchRegex:
+          path: spec.forProvider.assumeRolePolicy
+          pattern: '"Federated": "arn:aws-us-gov:iam::444455556666:oidc-provider/irsa\.second\.example\.com"'

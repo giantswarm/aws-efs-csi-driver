@@ -103,7 +103,7 @@ The bundle chart's `_helpers.tpl` contains a `giantswarm.workloadValues` helper 
 
 1. **Image transformation** -- The bundle stores images in GS split format (`registry` + `repository`). The helper combines them into a single `repository` field that the upstream chart expects (e.g. `gsoci.azurecr.io` + `giantswarm/aws-efs-csi-driver` becomes `gsoci.azurecr.io/giantswarm/aws-efs-csi-driver`).
 
-2. **IRSA annotation** -- The helper computes the IAM role ARN and injects it into `controller.serviceAccount.annotations`. The AWS account ID, partition and OIDC domains come from `aws.*` values, and any left unset are read from the cluster's `<clusterID>-crossplane-config` ConfigMap. Offline renders (`helm template`, `helm lint`) have no ConfigMap to read, so they need the `aws.*` values set, as in `helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml`.
+2. **IRSA annotation** -- The helper computes the IAM role ARN and injects it into `controller.serviceAccount.annotations`. The AWS context comes from `aws.accountID`, `aws.awsPartition` and `aws.oidcDomains` (a list of OIDC provider hosts). Unset fields and an empty domain list fall back to the cluster's `<clusterID>-crossplane-config` ConfigMap; a non-empty domain list replaces all ConfigMap domains. Offline renders (`helm template`, `helm lint`) need all three values set, as in `helm/aws-efs-csi-driver-bundle/ci/abs-validation-values.yaml`.
 
 3. **Upstream vs. extras routing** -- Values are split into two groups:
    - **Upstream values** (`image`, `sidecars`, `controller`, `node`, `storageClasses`, and any non-reserved key) are nested under `upstream:` so Helm routes them to the subchart.
