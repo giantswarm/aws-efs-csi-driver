@@ -1,0 +1,6 @@
+clusterID: abs-validation
+aws:
+  accountID: "000000000000"
+  awsPartition: aws
+  oidcDomains:
+  - irsa.abs-validation.invalid
