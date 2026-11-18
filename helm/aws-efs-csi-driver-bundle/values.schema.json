@@ -5,6 +5,25 @@
     "properties": {
         "ociRepositoryUrl": {
             "type": "string"
+        },
+        "aws": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "accountID": {
+                    "type": "string"
+                },
+                "awsPartition": {
+                    "type": "string"
+                },
+                "oidcDomains": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            }
         }
     }
 }
