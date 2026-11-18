@@ -1,11 +1,12 @@
-{{- if .Values.global.podSecurityStandards.enforced }}
+{{- if and .Values.global.podSecurityStandards.enforced .Values.kyvernoPolicyExceptions.enabled .Values.kyvernoPolicyExceptions.legacy.enabled }}
 apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-controller-exceptions
-  namespace: policy-exceptions
+  namespace: giantswarm
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+    policy.giantswarm.io/migrated-to-cel: "true"
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
 spec:
@@ -60,9 +61,10 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: policy-exceptions
+  namespace: giantswarm
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
+    policy.giantswarm.io/migrated-to-cel: "true"
   annotations:
     "helm.sh/hook": "pre-install,pre-upgrade"
 spec:
