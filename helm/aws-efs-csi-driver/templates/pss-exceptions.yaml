@@ -3,7 +3,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-controller-exceptions
-  namespace: giantswarm
+  namespace: kube-system
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
     policy.giantswarm.io/migrated-to-cel: "true"
@@ -61,7 +61,7 @@ apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: giantswarm
+  namespace: kube-system
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
     policy.giantswarm.io/migrated-to-cel: "true"

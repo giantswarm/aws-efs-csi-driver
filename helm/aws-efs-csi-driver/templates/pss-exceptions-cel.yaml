@@ -3,7 +3,7 @@ apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: efs-csi-controller-exceptions
-  namespace: giantswarm
+  namespace: kube-system
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
@@ -73,7 +73,7 @@ apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: efs-csi-node-exceptions
-  namespace: giantswarm
+  namespace: kube-system
   labels:
     {{- include "aws-efs-csi-driver.labels" . | nindent 4 }}
   annotations:
